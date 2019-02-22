@@ -1,0 +1,185 @@
+#include "simclientservice.h"
+
+#include <QDebug>
+#include <QtGlobal>
+
+#include <QDebug>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QJsonParseError>
+
+#include "modelconfig.h"
+
+
+//This is run after a client connects, but before authentication takes place.
+//You can do initializtion here, but do nothing that requires authentication.
+ControlSysService::ControlSysService(QObject *parent) :
+    QObject(parent)
+{
+    client = 0;
+}
+
+void ControlSysService::init()
+{   
+    client = new QTcpSocket(this);
+
+    connect(client, SIGNAL(connected()),this, SLOT(client_connected()));
+
+    qDebug() << "connecting...";
+
+    // this is not blocking call
+    client->connectToHost("127.0.0.1", 9999);
+
+    // we need to wait...
+    if(!client->waitForConnected(5000))
+    {
+        qDebug() << "Error: " << client->errorString();
+        client->deleteLater();
+        client = 0;
+    }
+}
+
+void ControlSysService::client_connected()
+{
+    // need to grab the socket
+    QTcpSocket *socket = client->nextPendingConnection();
+    if (server_socket) {
+        socket->write("Client already connected\r\n");
+        socket->flush();
+
+        socket->waitForBytesWritten(3000);
+
+        socket->close();
+
+        return;
+    }
+
+    qDebug() << "New client";
+
+    server_socket = socket;
+
+    connect(client, SIGNAL(disconnected()),this,SLOT(client_disconnected()));
+    connect(client, SIGNAL(readyRead()), this, SLOT(client_readyRead()));
+
+}
+
+void ControlSysService::client_disconnected()
+{
+    qDebug() << "client_disconnected";
+    client = 0;
+}
+
+
+void ControlSysService::client_readyRead()
+{
+    qDebug("readyRead: ");
+
+    QString msg_type;
+
+    // Read new message
+    QString strReply = (QString)(server_socket->readAll());
+
+    // Parse JSON
+    QJsonParseError parse_error;
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(strReply.toUtf8(), &parse_error);
+
+    // Validate and send validation error
+    if (jsonResponse.isNull()) {
+        QJsonObject error_msg;
+        error_msg.insert("type","error");
+        error_msg.insert("info",parse_error.errorString());
+
+        server_socket->write(QJsonDocument(error_msg).toJson());
+    }
+
+    // Using JSON
+    QJsonObject jsonObject = jsonResponse.object();
+
+    // Get type of message
+    msg_type = jsonObject["type"].toString();
+
+    qDebug() << jsonObject;
+
+    // Call handlers
+    if (msg_type == "ping")
+    {
+        qDebug() << "Pong!";
+        QJsonObject pong_msg;
+        pong_msg.insert("type","pong");
+        server_socket->write(QJsonDocument(pong_msg).toJson());
+    }
+    else if (msg_type == "started_event") handler_started_event();
+    else if (msg_type == "paused_event") handler_paused_event();
+    else if (msg_type == "stopped_event") handler_stopped_event();
+    else if (msg_type == "ready_event") handler_ready_event();
+    else if (msg_type == "positions") handler_positions(jsonObject);
+
+    // For sens subsystem...
+    else if (msg_type == "find_barriers") {}
+    else if (msg_type == "get_position") {}
+    else if (msg_type == "get_groundType") {}
+
+    // Unknown message type
+    else {
+        QJsonObject error_msg;
+        error_msg.insert("type","error");
+        error_msg.insert("info","Unknown type (" + msg_type + ")");
+
+        server_socket->write(QJsonDocument(error_msg).toJson());
+    }
+}
+
+void ControlSysService::start_request()
+{
+
+}
+void ControlSysService::handler_started_event()
+{
+    emit model_started();
+    //emit model_started_error("Unknown error");
+}
+
+void ControlSysService::send_start_position(GroupPos start_pos)
+{
+
+}
+
+void ControlSysService::set_pause_request()
+{
+
+}
+
+void ControlSysService::handler_paused_event()
+{
+
+}
+
+void ControlSysService::set_stop_request()
+{
+
+}
+
+void ControlSysService::handler_stopped_event()
+{
+
+}
+
+void ControlSysService::handler_ready_event()
+{
+
+}
+
+void ControlSysService::get_positions_request()
+{
+
+}
+
+void ControlSysService::handler_positions(QJsonObject jsonObject)
+{
+
+}
+
+
+

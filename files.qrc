@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/pictures">
+        <file>icons/unit.png</file>
+        <file>icons/obst_background.png</file>
+    </qresource>
+</RCC>

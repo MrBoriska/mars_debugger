@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     graphicScene = new PaintScene(this);
     graphicScene->EditorDialog = EditorDialog;
     graphicScene->setItemIndexMethod(QGraphicsScene::NoIndex);
+    modelConfig->sceneObject = graphicScene;
 
     ui->graphicsView->setScene(graphicScene);
 
@@ -262,11 +263,11 @@ void MainWindow::on_start_model_triggered()
 
     ui->statusBar->showMessage("Отправляем начальное положение роботов и обьекта...");
     modelConfig->setStartPosition();
+
+    controlSysService->set_config_data(modelConfig);
     controlSysService->set_start_pos(modelConfig->getStartPosition());
-    //controlSysService->waitForSending(); //todo: need async and catch response
     ui->statusBar->showMessage("Отправляем траекторию движения обьекта...");
     controlSysService->set_track_path(modelConfig->getTrackPath());
-    //controlSysService->waitForSending(); //todo: need async and catch response
 
 
     ui->statusBar->showMessage("Запуск...");

@@ -15,9 +15,6 @@ public:
     explicit ControlSysService(QObject *parent = 0);
     ~ControlSysService();
 
-
-
-
 signals:
     void cs_started();
     void cs_started_error(const QString);
@@ -34,6 +31,7 @@ public slots:
     void send_stop_request();
     void set_start_pos(GroupPos start_pos);
     void set_track_path(QPainterPath tpath);
+    void set_config_data(ModelConfig *config);
     void get_pos_request();
 
 private slots:
@@ -53,6 +51,7 @@ private:
     void handler_ready_event();
     void handler_unready_event();
     void handler_positions(QJsonObject jsonObject);
+    void handler_get_groundType(QJsonObject jsonObject);
 
     QJsonObject gpos_to_jsonObject(GroupPos gpos);
     QJsonObject state_to_jsonObject(RobotState state);
@@ -63,6 +62,8 @@ private:
     ItemPos jsonObject_to_pos(QJsonObject jo);
     ItemVel jsonObject_to_vel(QJsonObject jo);
     QJsonArray tpath_to_jsonArray(QPainterPath tpath);
+    QJsonObject point_to_jsonObject(QPointF point);
+    QJsonObject material_to_jsonObject(ItemMaterial material);
 };
 
 #endif // CONTROLSYSSERVICE_H

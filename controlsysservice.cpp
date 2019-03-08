@@ -117,11 +117,6 @@ void ControlSysService::cs_readyRead(QString strReply)
     else if (msg_type == "unready_event") handler_unready_event();
     else if (msg_type == "positions") handler_positions(jsonObject);
 
-    // For sens subsystem...
-    else if (msg_type == "find_barriers") {}
-    else if (msg_type == "get_position") {}
-    else if (msg_type == "get_groundType") {}
-
     // Unknown message type
     else {
         QJsonObject error_msg;
@@ -184,6 +179,64 @@ void ControlSysService::handler_stopped_event()
  * Отправка входных данных системе управления
  * ---------------------------------------------------------------
  */
+void ControlSysService::set_config_data(ModelConfig *config) {
+    QJsonObject msg;
+    msg.insert("type", "set_config_data");
+
+    msg.insert("interval", config->interval);
+    msg.insert("step", config->step);
+    msg.insert("target_realtime_factor", config->target_realtime_factor);
+    msg.insert("vel_max", config->vel_max);
+    msg.insert("accn_max", config->accn_max);
+    msg.insert("acct_max", config->acct_max);
+
+    // Insertion materials list
+    QJsonArray materials;
+    foreach(ItemMaterial mat, config->materials) {
+        materials.append(material_to_jsonObject(mat));
+    }
+    msg.insert("materials",materials);
+
+
+    // Inserion map of scene
+
+    QJsonObject jsize;
+    jsize.insert("width", config->getSceneSize().width());
+    jsize.insert("height", config->getSceneSize().height());
+    msg.insert("scene_size", jsize);
+
+    QJsonArray map;
+    QList<QGraphicsItem *> items = config->sceneObject->items();
+    foreach(QGraphicsItem* item, items) {
+        QJsonObject jo;
+        if (item->type() == PaintPolygonItem::Type) {
+            jo.insert("type","ground_polygon");
+
+            PaintPolygonItem *polygon_item = (PaintPolygonItem *)item;
+            if (!(polygon_item->isObstacle())) {
+                QJsonArray points;
+                QPolygonF polygon = polygon_item->polygon();
+                int count = polygon.count();
+                for(int i=0;i<count;i++) {
+                    points.append(point_to_jsonObject(polygon.at(i)));
+                }
+                jo.insert("points", points);
+                jo.insert("pos", point_to_jsonObject(polygon_item->scenePos()));
+
+                jo.insert("material", polygon_item->getMaterialColor().name());
+                map.append(jo);
+            }
+        }
+    }
+    msg.insert("map", map);
+
+
+    qDebug() << msg;
+
+    self_socket->sendTextMessage(QJsonDocument(msg).toJson());
+}
+
+
 void ControlSysService::set_start_pos(GroupPos start_pos)
 {
     QJsonObject msg = gpos_to_jsonObject(start_pos);
@@ -257,10 +310,7 @@ QJsonArray ControlSysService::tpath_to_jsonArray(QPainterPath tpath)
         }
 
         QPointF point = el;
-        QJsonObject jpoint;
-        jpoint.insert("x", point.x());
-        jpoint.insert("y", point.y());
-        jo.insert("point", jpoint);
+        jo.insert("point", point_to_jsonObject(point));
 
         ja.append(jo);
     }
@@ -286,6 +336,26 @@ QJsonObject ControlSysService::state_to_jsonObject(RobotState state)
     jo.insert("pos", pos_to_jsonObject(state.pos));
     jo.insert("vel", vel_to_jsonObject(state.vel));
     return jo;
+}
+
+QJsonObject ControlSysService::material_to_jsonObject(ItemMaterial material)
+{
+    QJsonObject jo;
+    jo.insert("title", material.title);
+    jo.insert("color", material.color.name());
+
+    jo.insert("accn_max", material.accn_max);
+    jo.insert("acct_max", material.acct_max);
+
+    return jo;
+}
+
+QJsonObject ControlSysService::point_to_jsonObject(QPointF point)
+{
+    QJsonObject jpoint;
+    jpoint.insert("x", point.x());
+    jpoint.insert("y", point.y());
+    return jpoint;
 }
 
 QJsonObject ControlSysService::pos_to_jsonObject(ItemPos pos)

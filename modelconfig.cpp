@@ -4,6 +4,12 @@ ModelConfig::ModelConfig(QObject *parent) : QObject(parent)
 {
     step = 0.5;
     interval = 10;//150
+    target_realtime_factor = 1.0;
+    vel_max = 0.5; // m/s
+    accn_max = 0.01; // m/s^2
+    acct_max = 0.1; // m/s^2
+
+
     step_max = 3;
     step_min = 0.1;
     interval_max = 10;
@@ -19,19 +25,27 @@ ModelConfig::ModelConfig(QObject *parent) : QObject(parent)
 
     mat.color = QColor("#b5e3ea");
     mat.title = "Лёд";
+    mat.accn_max = 0.01;
+    mat.acct_max = 0.01;
     materials.append(mat);
 
     mat.color = QColor("#5a3d32");
     mat.title = "Земля";
+    mat.accn_max = 0.05;
+    mat.acct_max = 0.2;
     materials.append(mat);
 
     mat.color = QColor("#707f89");
     mat.title = "Асфальт";
+    mat.accn_max = 0.2;
+    mat.acct_max = 0.2;
     materials.append(mat);
     defaultMaterial = mat;
 
     mat.color = QColor("#f2e27f");
     mat.title = "Песок";
+    mat.accn_max = 0.02;
+    mat.acct_max = 0.02;
     materials.append(mat);
 }
 
@@ -138,6 +152,16 @@ double ModelConfig::getSceneBorderWidth()
 QSize ModelConfig::getSceneSize()
 {
     return sceneSize;
+}
+
+ItemMaterial ModelConfig::getItemMaterialByColor(QColor color)
+{
+    foreach (ItemMaterial mat, materials) {
+        if (mat.color == color) {
+            return mat;
+        }
+    }
+    return defaultMaterial;
 }
 
 void ModelConfig::reset()

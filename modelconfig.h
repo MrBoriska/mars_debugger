@@ -6,6 +6,7 @@
 #include "unititem.h"
 #include "trackitem.h"
 #include "objectitem.h"
+#include "paintscene.h"
 
 struct ItemPos {
   qreal x;
@@ -29,6 +30,8 @@ struct RobotState {
 struct ItemMaterial {
     QColor color;
     QString title;
+    qreal accn_max;
+    qreal acct_max;
 };
 
 struct GroupPos {
@@ -55,11 +58,26 @@ public:
      * @brief временной интервал между тактами отработки модели(мс)
      */
     int interval;
+    double target_realtime_factor;
 
+    /**
+     * @brief максимальная скорость робота(которую он стремится достичь)
+     */
+    double vel_max;
+
+    /**
+     * @brief максимальное ускорение робота(которое он стремится достичь)
+     */
+    double accn_max;
+    double acct_max;
+
+    // Mutable values:
     double step_max;
     double step_min;
     int interval_max;
     int interval_min;
+
+    PaintScene* sceneObject;
 
     void reset();
 
@@ -84,6 +102,7 @@ public:
     void setSceneSize(QSize size);
     double getSceneBorderWidth();
 
+    ItemMaterial getItemMaterialByColor(QColor color);
 
 private:
     static ModelConfig* _instance;

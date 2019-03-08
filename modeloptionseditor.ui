@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="object_options">
       <attribute name="title">
@@ -284,94 +284,6 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="materials_table">
-      <attribute name="title">
-       <string>Страница</string>
-      </attribute>
-      <widget class="QTableWidget" name="tableWidget">
-       <property name="geometry">
-        <rect>
-         <x>25</x>
-         <y>11</y>
-         <width>431</width>
-         <height>301</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>false</bool>
-       </property>
-       <row>
-        <property name="text">
-         <string>1</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>2</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>3</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>4</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>5</string>
-        </property>
-       </row>
-       <column>
-        <property name="text">
-         <string>Название</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Цвет</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Новый столбец</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>танг. ускорение</string>
-        </property>
-       </column>
-       <item row="0" column="0">
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-       <item row="1" column="0">
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-       <item row="2" column="0">
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-       <item row="3" column="0">
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-       <item row="4" column="0">
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-      </widget>
-     </widget>
      <widget class="QWidget" name="tab">
       <attribute name="title">
        <string>параметры симуляции</string>
@@ -454,6 +366,194 @@
         </spacer>
        </item>
       </layout>
+     </widget>
+     <widget class="QWidget" name="materials_table">
+      <attribute name="title">
+       <string>Материалы</string>
+      </attribute>
+      <widget class="QTableWidget" name="tableWidget">
+       <property name="geometry">
+        <rect>
+         <x>15</x>
+         <y>11</y>
+         <width>451</width>
+         <height>261</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <row>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </row>
+       <row>
+        <property name="text">
+         <string>2</string>
+        </property>
+       </row>
+       <row>
+        <property name="text">
+         <string>3</string>
+        </property>
+       </row>
+       <row>
+        <property name="text">
+         <string>4</string>
+        </property>
+       </row>
+       <column>
+        <property name="text">
+         <string/>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Название</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Цвет</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>норм. ускорение</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>танг. ускорение</string>
+        </property>
+       </column>
+       <item row="0" column="1">
+        <property name="text">
+         <string>Асфальт</string>
+        </property>
+       </item>
+       <item row="0" column="2">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="background">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>76</red>
+           <green>76</green>
+           <blue>76</blue>
+          </color>
+         </brush>
+        </property>
+       </item>
+       <item row="0" column="3">
+        <property name="text">
+         <string>0.1</string>
+        </property>
+        <property name="background">
+         <brush brushstyle="NoBrush">
+          <color alpha="255">
+           <red>112</red>
+           <green>112</green>
+           <blue>112</blue>
+          </color>
+         </brush>
+        </property>
+       </item>
+       <item row="0" column="4">
+        <property name="text">
+         <string>0.1</string>
+        </property>
+       </item>
+       <item row="1" column="1">
+        <property name="text">
+         <string>Песок</string>
+        </property>
+       </item>
+       <item row="1" column="2">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="background">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>244</red>
+           <green>189</green>
+           <blue>59</blue>
+          </color>
+         </brush>
+        </property>
+       </item>
+       <item row="1" column="3">
+        <property name="text">
+         <string>0.02</string>
+        </property>
+       </item>
+       <item row="1" column="4">
+        <property name="text">
+         <string>0.01</string>
+        </property>
+       </item>
+       <item row="2" column="1">
+        <property name="text">
+         <string>Лёд</string>
+        </property>
+       </item>
+       <item row="2" column="2">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="background">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>70</red>
+           <green>234</green>
+           <blue>215</blue>
+          </color>
+         </brush>
+        </property>
+       </item>
+       <item row="2" column="3">
+        <property name="text">
+         <string>0.01</string>
+        </property>
+       </item>
+       <item row="2" column="4">
+        <property name="text">
+         <string>0.005</string>
+        </property>
+       </item>
+       <item row="3" column="1">
+        <property name="text">
+         <string>Земля</string>
+        </property>
+       </item>
+       <item row="3" column="2">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="background">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>130</red>
+           <green>60</green>
+           <blue>0</blue>
+          </color>
+         </brush>
+        </property>
+       </item>
+       <item row="3" column="3">
+        <property name="text">
+         <string>0.05</string>
+        </property>
+       </item>
+       <item row="3" column="4">
+        <property name="text">
+         <string>0.05</string>
+        </property>
+       </item>
+      </widget>
      </widget>
     </widget>
    </item>

@@ -129,7 +129,6 @@ void ItemEditor::updateMaterialSelect()
 
 void ItemEditor::selectChangeItem(QGraphicsItem * item)
 {
-
     if (!item->isSelected()) {
         selected_items.append(item);
     } else {
@@ -157,7 +156,6 @@ void ItemEditor::on_deleteButton_clicked()
 
     QList<QGraphicsItem *> main_items;
     foreach(QGraphicsItem* item, selected_items) {
-        //todo: это слабое место, необходима универсальность
         if (item->type() == PaintPoint::Type) {
             item->setSelected(false);
             item->scene()->removeItem(item);

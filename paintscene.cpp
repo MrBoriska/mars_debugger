@@ -302,12 +302,37 @@ void PaintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 if (event->buttons() == Qt::LeftButton) {
                     // Переход к установке следующей точки траектории
                     QPainterPath path = track_item->path();
+
+                    // todo: Ограничение на "равность отрезков пути"
+                    /*QVector2D vector = QVector2D(event->scenePos() - path.elementAt(path.elementCount()-2));
+                    if (track_item->distance == 0) {
+                        track_item->distance = vector.length();
+                    }
+                    vector.normalize();
+                    vector *= track_item->distance;
+
+                    vector = QVector2D(path.elementAt(path.elementCount()-2)) + vector;
+
+                    path.setElementPositionAt(path.elementCount()-1, vector.x(), vector.y());
+                    */
                     path.lineTo(event->scenePos()+QPointF(0.01,0.01));
                     track_item->setPath(path);
 
                 } else if (event->buttons() == Qt::RightButton) {
                     QPainterPath path = track_item->path();
-                    path.lineTo(event->scenePos());
+
+                    // todo: Ограничение на "равность отрезков пути"
+                    QVector2D vector = QVector2D(event->scenePos() - path.elementAt(path.elementCount()-2));
+                    /*if (track_item->distance == 0) {
+                        track_item->distance = vector.length();
+                    }
+                    vector.normalize();
+                    vector *= track_item->distance;*/
+
+                    vector = QVector2D(path.elementAt(path.elementCount()-2)) + vector;
+
+                    path.setElementPositionAt(path.elementCount()-1, vector.x(), vector.y());
+
                     track_item->setPath(path);
 
                     // Устанавливаем целевую точку траектории

@@ -23,6 +23,7 @@ public:
     int type() const { return Type; }
 
     bool editable;
+    double distance;
     bool isEditable()
     {
         return editable;

@@ -397,7 +397,7 @@ void MainWindow::syncModelAndView(GroupPos gpos, QTime time)
     double R = 3;
     tp->setRect(-R,-R,2*R,2*R);
     tp->setPos(gpos.object_pos.pos.x,gpos.object_pos.pos.y);
-
+    tp->setZValue(10);
     graphicScene->addItem(tp);
 
 

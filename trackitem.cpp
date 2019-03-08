@@ -5,6 +5,7 @@ TrackItem::TrackItem(QPainterPath startPosPath, QGraphicsPathItem *parent) :
     QGraphicsPathItem(startPosPath, parent)
 {
     editable = true;
+    distance = 0;
     this->setZValue(7);
 
     QPen pen = QPen(Qt::red);

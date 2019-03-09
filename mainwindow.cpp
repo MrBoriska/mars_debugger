@@ -21,9 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    OptionsDialog = new ModelOptionsEditor(this);
 
-    ModelViewer = new ModelAnalisisViewer(this);
 
     syncModelTimer = 0;
 
@@ -55,6 +53,9 @@ MainWindow::MainWindow(QWidget *parent) :
     toolsGroup->addAction(ui->add_track);
     toolsGroup->addAction(ui->open_editor);
     toolsGroup->setExclusive(true);
+
+    OptionsDialog = new ModelOptionsEditor(this);
+    ModelViewer = new ModelAnalisisViewer(this);
 
     // Вешаем слот обновления статуса по сигналу от graphicScene
     connect(graphicScene, SIGNAL(changedStatus(QString)), this, SLOT(showStatus(QString)));
@@ -299,7 +300,7 @@ void MainWindow::model_started()
 
     }
     // Запуск опрашивателя модели
-    syncModelTimer->setInterval(100);
+    syncModelTimer->setInterval(modelConfig->view_interval);
     syncModelTimer->start();
 
 

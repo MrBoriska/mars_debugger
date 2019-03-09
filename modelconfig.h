@@ -58,18 +58,13 @@ public:
      * @brief временной интервал между тактами отработки модели(мс)
      */
     int interval;
+    int view_interval;
     double target_realtime_factor;
 
     /**
      * @brief максимальная скорость робота(которую он стремится достичь)
      */
     double vel_max;
-
-    /**
-     * @brief максимальное ускорение робота(которое он стремится достичь)
-     */
-    double accn_max;
-    double acct_max;
 
     // Mutable values:
     double step_max;

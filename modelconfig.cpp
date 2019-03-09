@@ -3,11 +3,10 @@
 ModelConfig::ModelConfig(QObject *parent) : QObject(parent)
 {
     step = 0.5;
-    interval = 10;//150
-    target_realtime_factor = 1.0;
+    interval = 1;//150
+    view_interval = 150;
+    target_realtime_factor = 0.3;
     vel_max = 0.5; // m/s
-    accn_max = 0.01; // m/s^2
-    acct_max = 0.1; // m/s^2
 
 
     step_max = 3;
@@ -37,8 +36,8 @@ ModelConfig::ModelConfig(QObject *parent) : QObject(parent)
 
     mat.color = QColor("#707f89");
     mat.title = "Асфальт";
-    mat.accn_max = 0.2;
-    mat.acct_max = 0.2;
+    mat.accn_max = 0.02;
+    mat.acct_max = 0.02;
     materials.append(mat);
     defaultMaterial = mat;
 

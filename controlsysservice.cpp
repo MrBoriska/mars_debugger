@@ -187,8 +187,6 @@ void ControlSysService::set_config_data(ModelConfig *config) {
     msg.insert("step", config->step);
     msg.insert("target_realtime_factor", config->target_realtime_factor);
     msg.insert("vel_max", config->vel_max);
-    msg.insert("accn_max", config->accn_max);
-    msg.insert("acct_max", config->acct_max);
 
     // Insertion materials list
     QJsonArray materials;

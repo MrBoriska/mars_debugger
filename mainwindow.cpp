@@ -379,6 +379,9 @@ void MainWindow::showStopSimulation()
 
 void MainWindow::syncModelAndView(GroupPos gpos, QTime time)
 {
+    if (!syncModelTimer->isActive())
+        return;
+
     setPositionByGroupPos(
         // Список управляемых моделью роботов
         modelConfig->getUnits(),

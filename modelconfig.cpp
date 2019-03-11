@@ -3,9 +3,9 @@
 ModelConfig::ModelConfig(QObject *parent) : QObject(parent)
 {
     step = 0.5;
-    interval = 1;//150
-    view_interval = 150;
-    target_realtime_factor = 0.3;
+    interval = 5;
+    view_interval = 100;
+    target_realtime_factor = 0.1;
     vel_max = 0.5; // m/s
 
 
@@ -36,8 +36,8 @@ ModelConfig::ModelConfig(QObject *parent) : QObject(parent)
 
     mat.color = QColor("#707f89");
     mat.title = "Асфальт";
-    mat.accn_max = 0.02;
-    mat.acct_max = 0.02;
+    mat.accn_max = 0.1;
+    mat.acct_max = 0.1;
     materials.append(mat);
     defaultMaterial = mat;
 
@@ -109,8 +109,8 @@ void ModelConfig::setStartPosition()
     ItemPos pos;
     RobotState state;
     state.pos = pos;
-    state.vel.x = 0;
-    state.vel.w = 0;
+    state.vel.x = 0.0;
+    state.vel.w = 0.0;
 
     foreach(UnitItem *unit, units) {
         curr_point = unit->sceneBoundingRect().center();

@@ -3,10 +3,7 @@
 
 #include <QDateTime>
 
-#ifndef QT_NO_PRINTER
-#include <QPrinter>
-#include <QPrintDialog>
-#endif
+#include <QFileDialog>
 
 ModelAnalisisViewer::ModelAnalisisViewer(QWidget *parent) :
     QDialog(parent),
@@ -14,20 +11,28 @@ ModelAnalisisViewer::ModelAnalisisViewer(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // Название осей
-    ui->Xaxis->xAxis->setLabel("Время, t[с]");
-    ui->Xaxis->yAxis->setLabel("X Axis");
-    ui->Yaxis->xAxis->setLabel("Время, t[с]");
-    ui->Yaxis->yAxis->setLabel("Y Axis");
-    ui->Angle->xAxis->setLabel("Время, t[с]");
-    ui->Angle->yAxis->setLabel("Angle");
+    ui->Plot_1->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->Plot_2->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
 
     // Настройки навигации по графику
-    ui->Xaxis->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
-    ui->Yaxis->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
-    ui->Angle->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+    ui->Plot_1->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+    ui->Plot_2->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+    //ui->Angle->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
 
     this->setWindowFlags(Qt::Window);
+
+    // Настройка доступных к отображению типов графиков
+    ui->typeSelectBox->clear();
+    ui->typeSelectBox->insertItems(0, this->types_list);
+    ui->typeSelectBox_2->clear();
+    ui->typeSelectBox_2->insertItems(0, this->types_list);
+    ui->axisSelectBox->clear();
+    ui->axisSelectBox->insertItems(0, this->axis_list);
+    ui->axisSelectBox_2->clear();
+    ui->axisSelectBox_2->insertItems(0, this->axis_list);
+
+    // Init vars foracceleration calculation
+    prev_time = 0;
 }
 
 void ModelAnalisisViewer::closeEvent(QCloseEvent *event)
@@ -36,11 +41,47 @@ void ModelAnalisisViewer::closeEvent(QCloseEvent *event)
     QDialog::closeEvent(event);
 }
 
+void ModelAnalisisViewer::setAxisNames(PlotType plot_type, QCustomPlot * plot)
+{
+    // Название осей
+    plot->xAxis->setLabel("Time, t[ms]");
+    switch (plot_type) {
+        case V_LIN:
+            plot->yAxis->setLabel("Linear velocity, [m/s]");
+            break;
+        case V_ANG:
+            plot->yAxis->setLabel("Angular velocity, [m/s]");
+            break;
+        case ACC_LIN:
+            plot->yAxis->setLabel("Linear acceleration, [m/s^2]");
+            break;
+        case ACC_ANG:
+            plot->yAxis->setLabel("Angular acceleration, [rad/s^2]");
+            break;
+        case POS:
+            plot->yAxis->setLabel("Position, [m]");
+            break;
+        case ERR_POS:
+            plot->yAxis->setLabel("Position error, [m]");
+            break;
+        case ERR_VEL_X:
+            plot->yAxis->setLabel("Linear velocity error, [m/s]");
+            break;
+        case ERR_VEL_Z:
+            plot->yAxis->setLabel("Angular velocity error, [m/s]");
+            break;
+    }
+
+}
+
 void ModelAnalisisViewer::startAnalisis(int units_count)
 {
-    ui->Xaxis->clearGraphs();
-    ui->Yaxis->clearGraphs();
-    ui->Angle->clearGraphs();
+    ui->Plot_1->clearGraphs();
+    ui->Plot_2->clearGraphs();
+
+    // Generate Axis names by selected data types
+    this->setAxisNames(PlotType(ui->typeSelectBox->currentIndex()), ui->Plot_1);
+    this->setAxisNames(PlotType(ui->typeSelectBox_2->currentIndex()), ui->Plot_2);
 
     // цвета с номерами 0 - 19 соответсвуют глобальным цветам Qt::GlobalColor
     // нам интересны только цвета в диапазоне 7-18
@@ -49,28 +90,31 @@ void ModelAnalisisViewer::startAnalisis(int units_count)
     QString name_graph;
 
     for (int i=0;i<units_count;i++) {
-        unit_pen = QPen((Qt::GlobalColor)color);
-        name_graph = "Unit " + QString::number(i);
+        unit_pen = QPen(static_cast<Qt::GlobalColor>(color));
+        name_graph = "Robot " + QString::number(i+1);
 
-        ui->Xaxis->addGraph()->setPen(unit_pen);
-        ui->Yaxis->addGraph()->setPen(unit_pen);
-        ui->Angle->addGraph()->setPen(unit_pen);
-        ui->Xaxis->graph(i)->setName(name_graph);
-        ui->Yaxis->graph(i)->setName(name_graph);
-        ui->Angle->graph(i)->setName(name_graph);
+        if (i % 2)
+            unit_pen.setStyle(Qt::DotLine);
 
+        ui->Plot_1->addGraph()->setPen(unit_pen);
+        ui->Plot_2->addGraph()->setPen(unit_pen);
+        ui->Plot_1->graph(i)->setName(name_graph);
+        ui->Plot_2->graph(i)->setName(name_graph);
+        //ui->Xaxis->graph(i)->setScatterStyle(QCPScatterStyle::ssDisc);
+        //ui->Yaxis->graph(i)->setScatterStyle(QCPScatterStyle::ssDisc);
 
-        color++;
+        color += 2;
         if (color > 18) color = 7;
     }
 
-    ui->Xaxis->legend->setVisible(true);
-    ui->Yaxis->legend->setVisible(true);
-    ui->Angle->legend->setVisible(true);
+    ui->Plot_1->legend->setVisible(true);
+    ui->Plot_2->legend->setVisible(true);
+
+    ui->Plot_1->yAxis->setRange(0, 0.00000001);
+    ui->Plot_2->yAxis->setRange(0, 0.00000001);
+
     //ui->Xaxis->setInteraction(QCP::iSelectLegend, true);
     //ui->Yaxis->setInteraction(QCP::iSelectLegend, true);
-    //ui->Angle->setInteraction(QCP::iSelectLegend, true);
-
 
     //connect(ui->Xaxis, SIGNAL(legendClick(QCPLegend *, QCPAbstractLegendItem *, QMouseEvent *)),
     //        this, SLOT(selectPlot(QCPLegend *, QCPAbstractLegendItem *, QMouseEvent *)));
@@ -83,38 +127,167 @@ void ModelAnalisisViewer::selectPlot(QCPLegend *legend, QCPAbstractLegendItem *i
     qDebug() << "i am called!";
 }
 
-void ModelAnalisisViewer::addState(int index, qreal x, qreal y, qreal angle, qint64 time)
+void ModelAnalisisViewer::addState(int index, qreal x, qreal y, qint64 time)
 {
     if (time < 0) {
         time = QDateTime::currentMSecsSinceEpoch() - start_time;
     }
 
-    //time /= 1000;
+    //time = qreal(time)/1000.0;
 
-    ui->Xaxis->graph(index)->addData(time, (double)x);
-    ui->Yaxis->graph(index)->addData(time, (double)y);
-    ui->Angle->graph(index)->addData(time, (double)angle);
+    ui->Plot_1->graph(index)->addData(time, double(x));
+    ui->Plot_2->graph(index)->addData(time, double(y));
 
-    ui->Xaxis->xAxis->setRange(0, time);
-    ui->Yaxis->xAxis->setRange(0, time);
-    ui->Angle->xAxis->setRange(0, time);
+    ui->Plot_1->xAxis->setRange(0.0, time);
+    ui->Plot_2->xAxis->setRange(0.0, time);
 
-    ui->Xaxis->yAxis->setRange(0, 700);
-    ui->Yaxis->yAxis->setRange(0, 500);
-    ui->Angle->yAxis->setRange(-360, 360);
+    if (ui->Plot_1->yAxis->range().upper < 1.2*x)
+        ui->Plot_2->yAxis->setRange(0, 1.2*x);
+    if (ui->Plot_1->yAxis->range().upper < 1.2*y)
+        ui->Plot_2->yAxis->setRange(0, 1.2*y);
 
-    ui->Xaxis->replot();
-    ui->Yaxis->replot();
-    ui->Angle->replot();
+    ui->Plot_1->replot();
+    ui->Plot_2->replot();
 }
 
+
+qreal ModelAnalisisViewer::getDataValueByType(GroupPos gpos, QTime time, PlotType plot_type, AxisType axis_type, int robot_id)
+{
+    qreal data_value = 0;
+
+    RobotState st_st = ModelConfig::Instance()->getStartPosition().object_pos;
+
+    switch (plot_type) {
+        case V_LIN:
+            switch(axis_type) {
+                case X_AXIS:
+                    data_value = gpos.robots_pos.at(robot_id).vel.x;
+                    break;
+                default:
+                    data_value = 0;
+                    break;
+            }
+            break;
+        case V_ANG:
+            switch(axis_type) {
+                case Z_AXIS:
+                    data_value = gpos.robots_pos.at(robot_id).vel.w;
+                    break;
+                default:
+                    data_value = 0;
+                    break;
+            }
+            break;
+        case ACC_LIN:
+            switch(axis_type) {
+                case X_AXIS:
+                    data_value = (gpos.robots_pos.at(robot_id).vel.x - prev_gpos.robots_pos.at(robot_id).vel.x);
+                    data_value /= (time.msecsSinceStartOfDay()-prev_time)/1000.0;
+                    break;
+                default:
+                    data_value = 0;
+                    break;
+            }
+            break;
+        case ACC_ANG:
+            switch(axis_type) {
+                case Z_AXIS:
+                    data_value = (gpos.robots_pos.at(robot_id).vel.w - prev_gpos.robots_pos.at(robot_id).vel.w);
+                    data_value /= (time.msecsSinceStartOfDay()-prev_time)/1000.0;
+                    break;
+                default:
+                    data_value = 0;
+                    break;
+            }
+            break;
+        case POS:
+            switch(axis_type) {
+                case X_AXIS:
+                    data_value = gpos.robots_pos.at(robot_id).pos.x;
+                    break;
+                case Y_AXIS:
+                    data_value = gpos.robots_pos.at(robot_id).pos.y;
+                    break;
+                default:
+                    data_value = 0;
+                    break;
+            }
+            break;
+        case ERR_POS:
+            switch(axis_type) {
+                case X_AXIS:
+                    data_value = gpos.robots_pos.at(robot_id).pos_real.x - st_st.pos.x;
+                    data_value -= gpos.robots_pos.at(robot_id).pos.x;
+                    break;
+                case Y_AXIS:
+                    data_value = gpos.robots_pos.at(robot_id).pos_real.y - st_st.pos.y;
+                    data_value -= gpos.robots_pos.at(robot_id).pos.y;
+                    break;
+                default:
+                    data_value = sqrt(
+                        pow(gpos.robots_pos.at(robot_id).pos_real.x - st_st.pos.x - gpos.robots_pos.at(robot_id).pos.x, 2) +
+                        pow(gpos.robots_pos.at(robot_id).pos_real.y - st_st.pos.y - gpos.robots_pos.at(robot_id).pos.y, 2)
+                    );
+                    break;
+            }
+            break;
+        case ERR_VEL_X:
+            switch(axis_type) {
+                case X_AXIS:
+                    data_value = gpos.robots_pos.at(robot_id).vel_real.x;
+                    data_value -= gpos.robots_pos.at(robot_id).vel.x;
+                    break;
+                default:
+                    data_value = 0;
+                    break;
+            }
+            break;
+
+        case ERR_VEL_Z:
+            switch(axis_type) {
+                case Z_AXIS:
+                    data_value = gpos.robots_pos.at(robot_id).vel_real.w;
+                    data_value -= gpos.robots_pos.at(robot_id).vel.w;
+                    break;
+                default:
+                    data_value = 0;
+                    break;
+            }
+            break;
+    }
+
+    return data_value;
+}
+
+// Slot calling by external signal
 void ModelAnalisisViewer::async_addState(GroupPos gpos, QTime time)
 {
-    int len = gpos.robots_pos.count();
-    for(int i=0; i<len; i++) {
-        ItemPos pos = gpos.robots_pos.at(i).pos;
-        this->addState(i, pos.x, pos.y, pos.alfa, time.msec());
+    if (prev_time == 0) {
+        prev_time = time.msecsSinceStartOfDay();
+        prev_gpos = gpos;
     }
+    int len = gpos.robots_pos.count();
+    for (int i=0; i<len; i++) {
+        this->addState(i,
+           this->getDataValueByType(
+               gpos,
+               time,
+               PlotType(ui->typeSelectBox->currentIndex()),
+               AxisType(ui->axisSelectBox->currentIndex()),
+               i
+           ),
+           this->getDataValueByType(
+               gpos,
+               time,
+               PlotType(ui->typeSelectBox_2->currentIndex()),
+               AxisType(ui->axisSelectBox_2->currentIndex()),
+               i
+           ),
+           time.msecsSinceStartOfDay()
+        );
+    }
+    prev_time = time.msecsSinceStartOfDay();
+    prev_gpos = gpos;
 }
 
 ModelAnalisisViewer::~ModelAnalisisViewer()
@@ -122,16 +295,30 @@ ModelAnalisisViewer::~ModelAnalisisViewer()
     delete ui;
 }
 
+
+// Обработчики диалога сохранения графиков
 void ModelAnalisisViewer::on_print_button_clicked()
 {
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
-    QPrinter printer;
-    // use paintRequest(QPainter*) signal
-    //QPrintPreviewDialog dialog(&printer, this);
-    QPrintDialog dialog(&printer, this);
-    if (dialog.exec() == QDialog::Accepted) {
-        QPainter painter(&printer);
-        this->render(&painter);// todo: необходимо что-то умнее, чем просто окошко копировать
+    QString filename = QFileDialog::getSaveFileName(this, "Save file", "", ".png");
+
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qDebug() << file.errorString();
+    } else {
+        qDebug() << filename;
+        ui->Plot_1->savePng(filename);
     }
-#endif
+}
+
+void ModelAnalisisViewer::on_print_button_2_clicked()
+{
+    QString filename = QFileDialog::getSaveFileName(this, "Save file", "", ".png");
+
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qDebug() << file.errorString();
+    } else {
+        qDebug() << filename;
+        ui->Plot_2->savePng(filename);
+    }
 }

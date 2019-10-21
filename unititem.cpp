@@ -25,7 +25,7 @@ UnitItem::UnitItem(QPointF position, QGraphicsItem *parent):
 UnitItem::~UnitItem()
 {
     ModelConfig::Instance()->delUnit(this);
-    qDebug() << "delete UnitItem(" << (QGraphicsItem *)this << ")";
+    qDebug() << "delete UnitItem(" << dynamic_cast<QGraphicsItem *>(this) << ")";
 }
 
 QVariant UnitItem::itemChange(GraphicsItemChange change, const QVariant &value)

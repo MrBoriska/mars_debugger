@@ -10,7 +10,7 @@ class PaintView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    explicit PaintView(QWidget *parent = 0);
+    explicit PaintView(QWidget *parent = nullptr);
     ~PaintView();
 
 signals:

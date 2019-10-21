@@ -59,7 +59,7 @@ void ItemEditor::on_dial_valueChanged(int angle)
             item->update();
             // дополнительно вызываем событие изменения позиции, для правильного завершения обработчиков
             if (item->type() == PaintPolygonItem::Type)
-                ((PaintPolygonItem*)item)->pos_changed();
+                (dynamic_cast<PaintPolygonItem*>(item))->pos_changed();
         }
     } else {
         // вращение каждого элемента вокруг своего центра отдельно
@@ -75,7 +75,7 @@ void ItemEditor::on_dial_valueChanged(int angle)
             item->update();
             // дополнительно вызываем событие изменения позиции, для правильного завершения обработчиков
             if (item->type() == PaintPolygonItem::Type)
-                ((PaintPolygonItem*)item)->pos_changed();
+                (dynamic_cast<PaintPolygonItem*>(item))->pos_changed();
         }
     }
 
@@ -102,9 +102,9 @@ void ItemEditor::updateMaterialSelect()
     QColor select_color = QColor();
     int equal_colors_count = 1;
     foreach(QGraphicsItem *item, selected_items) {
-        if (item->type() == PaintPolygonItem::Type && !( ((PaintPolygonItem *)item)->isObstacle() )) {
+        if (item->type() == PaintPolygonItem::Type && !( (dynamic_cast<PaintPolygonItem*>(item))->isObstacle() )) {
             use_materials++;
-            select_color = ((PaintPolygonItem*)item)->getMaterialColor();
+            select_color = (dynamic_cast<PaintPolygonItem*>(item))->getMaterialColor();
 
             if (common_color == select_color) {
                 equal_colors_count++;
@@ -180,7 +180,7 @@ void ItemEditor::on_materialBox_currentIndexChanged(int index)
 
     foreach(QGraphicsItem *item, selected_items) {
         if (item->type() == PaintPolygonItem::Type) {
-            ((PaintPolygonItem*)item)->setMaterialColor(
+            (dynamic_cast<PaintPolygonItem*>(item))->setMaterialColor(
                 ModelConfig::Instance()->materials.at(index-1).color
             );
         }

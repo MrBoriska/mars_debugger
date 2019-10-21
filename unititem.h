@@ -15,7 +15,7 @@ class UnitItem: public PaintItem, public QGraphicsPixmapItem
     Q_OBJECT
 public:
     enum { Type = UserType + 1 };
-    UnitItem(QPointF position, QGraphicsItem *parent = 0);
+    UnitItem(QPointF position, QGraphicsItem *parent = nullptr);
     ~UnitItem();
 
     int type() const { return Type; }

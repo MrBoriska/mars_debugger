@@ -17,7 +17,7 @@ PaintPolygonItem::PaintPolygonItem(QGraphicsItem *parent):
 
 PaintPolygonItem::~PaintPolygonItem()
 {
-    qDebug() << "delete PaintPolygonItem(" << (QGraphicsItem *)this << ")";
+    qDebug() << "delete PaintPolygonItem(" << dynamic_cast<QGraphicsItem *>(this) << ")";
 }
 
 
@@ -71,14 +71,14 @@ void PaintPolygonItem::select_changed() {
         if (!(this->isSelected())) {
             qDebug() << "начинаем тащить";
 
-            QList<QGraphicsItem*> other_selecting = ((PaintScene*)this->scene())->EditorDialog->getSelectedItems();
+            QList<QGraphicsItem*> other_selecting = (dynamic_cast<PaintScene*>(this->scene()))->EditorDialog->getSelectedItems();
 
             foreach(QGraphicsItem* point_, this->childItems()) {
 
                 // предок должен быть PaintPoint
                 PaintPoint* point;
                 if (point_->type() == PaintPoint::Type)
-                    point = (PaintPoint*)point_;
+                    point = dynamic_cast<PaintPoint*>(point_);
                 else
                     continue;
 
@@ -93,7 +93,7 @@ void PaintPolygonItem::select_changed() {
 
                         MoveGoal goal;
                         if (point2->parentItem()->type() == PaintPolygonItem::Type) {
-                            PaintPolygonItem* item_ = (PaintPolygonItem*)(point2->parentItem());
+                            PaintPolygonItem* item_ = dynamic_cast<PaintPolygonItem*>(point2->parentItem());
                             if (item_->isEditable()) {
                                 goal.point_goal = point;
                                 goal.point_moving = point2;

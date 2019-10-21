@@ -17,11 +17,10 @@ class ModelOptionsEditor : public QDialog
     Q_OBJECT
 
 public:
-    explicit ModelOptionsEditor(QWidget *parent = 0);
+    explicit ModelOptionsEditor(QWidget *parent = nullptr);
     ~ModelOptionsEditor();
 
 private slots:
-    void on_object_captures_count_valueChanged(int arg1);
 
     void on_maxSpeed_valueChanged(int speed);
 
@@ -44,7 +43,6 @@ protected:
 
 private:
     Ui::ModelOptionsEditor *ui;
-    QSettings config;
     ModelConfig *modelConfig;
 
     double k;

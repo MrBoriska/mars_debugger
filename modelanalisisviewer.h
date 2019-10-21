@@ -6,6 +6,7 @@
 
 #include "modelconfig.h"
 
+
 namespace Ui {
 class ModelAnalisisViewer;
 }

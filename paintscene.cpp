@@ -15,14 +15,14 @@
 
 PaintScene::PaintScene(QObject *parent) : QGraphicsScene(parent)
 {
-    basePolygon = 0;
-    baseBorderPolygon = 0;
+    basePolygon = nullptr;
+    baseBorderPolygon = nullptr;
 
-    polygon_item = 0;
-    unit_item = 0;
-    object_item = 0;
-    track_item = 0;
-    current_point = 0;
+    polygon_item = nullptr;
+    unit_item = nullptr;
+    object_item = nullptr;
+    track_item = nullptr;
+    current_point = nullptr;
     paint_mod = OffMOD;
 
     prev_angle = 0;
@@ -45,7 +45,7 @@ void PaintScene::sceneRectShow(const QRectF &rect)
 
     this->setSceneRect(rect);
 
-    if (basePolygon != 0) {
+    if (basePolygon != nullptr) {
         removeItem(basePolygon);
         delete basePolygon;
     }
@@ -64,7 +64,7 @@ void PaintScene::sceneRectShow(const QRectF &rect)
     this->addItem(basePolygon);
 
     // добавление граничного элемента
-    if (baseBorderPolygon != 0) {
+    if (baseBorderPolygon != nullptr) {
         removeItem(baseBorderPolygon);
         delete baseBorderPolygon;
     }
@@ -100,7 +100,7 @@ void PaintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     if (!(event->modifiers() & Qt::ControlModifier)) {
         if (paint_mod == PolygonMOD || paint_mod == ObstacleMOD)
         {
-            if (polygon_item == 0 ) {
+            if (polygon_item == nullptr) {
                 if (event->buttons() == Qt::LeftButton) {
                     // Создание полигона из двух точек
                     // Одна начальная, а другая будет перемещаться вслед за мышью(в mouseMoveEvent)
@@ -204,11 +204,11 @@ void PaintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                     } else {
                         delete polygon_item;
                     }
-                    polygon_item = 0;
+                    polygon_item = nullptr;
                 }
             }
         } else if (paint_mod == UnitMOD && event->buttons() == Qt::LeftButton) {
-            if (unit_item == 0) {
+            if (unit_item == nullptr) {
                 // Создание юнита
                 QPointF unitPos = event->scenePos();
                 fsetMagnetPointPos(event->scenePos(), &unitPos, ObjectItem::Type);
@@ -226,15 +226,15 @@ void PaintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             } else {
                 ModelConfig::Instance()->addUnit(unit_item);
                 emit addedItem(unit_item);
-                unit_item = 0;
+                unit_item = nullptr;
                 prev_angle = 0;
             }
 
         } else if (paint_mod == ObjectMOD && event->buttons() == Qt::LeftButton) {
-            if (object_item == 0) {
-                if (ModelConfig::Instance()->getObject() != 0) {
+            if (object_item == nullptr) {
+                if (ModelConfig::Instance()->getObject() != nullptr) {
                     QMessageBox::warning(
-                        (QWidget *)(this->activeWindow()),
+                        reinterpret_cast<QWidget *>(this->activeWindow()),
                         "info",
                         "Обьект управления может быть только один"
                     );
@@ -251,21 +251,21 @@ void PaintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 object_item->setMagnetPoints();
                 ModelConfig::Instance()->setObject(object_item);
                 emit addedItem(object_item);
-                object_item = 0;
+                object_item = nullptr;
             }
         }
         else if (paint_mod == TrackMOD)
         {
-            if (track_item == 0 ) {
-                if (ModelConfig::Instance()->getTrack() != 0) {
+            if (track_item == nullptr ) {
+                if (ModelConfig::Instance()->getTrack() != nullptr) {
                     QMessageBox::warning(
-                        (QWidget *)(this->activeWindow()),
+                        reinterpret_cast<QWidget *>(this->activeWindow()),
                         "info",
                         "Траектория уже создана"
                     );
                 } else if (event->buttons() == Qt::LeftButton) {
                     QPointF nodePos;
-                    ObjectItem *ob_itm = 0;
+                    ObjectItem *ob_itm = nullptr;
 
                     // Ищем обьект управления на сцене и ставим начальную точку в центр этого обьекта
                     QList<QGraphicsItem *> under_items = this->items(event->scenePos());
@@ -273,7 +273,7 @@ void PaintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                         foreach(QGraphicsItem *item, under_items)
                         {
                             if(item && item->type() == ObjectItem::Type) {
-                                ob_itm = (ObjectItem*)item;
+                                ob_itm = dynamic_cast<ObjectItem*>(item);
 
                                 nodePos = ob_itm->mapToScene(ob_itm->getMagnetPointPos(PaintPoint::CENTRAL));
                                 break;
@@ -292,7 +292,7 @@ void PaintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                         this->addItem(track_item);
                     } else {
                         QMessageBox::warning(
-                            (QWidget *)(this->activeWindow()),
+                            reinterpret_cast<QWidget *>(this->activeWindow()),
                             "info",
                             "Траектория всегда должна начинаться с положения обьекта управления"
                         );
@@ -341,7 +341,7 @@ void PaintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
                     // При нажатии ПКМ завершаем ввод
                     emit addedItem(track_item);
-                    track_item = 0;
+                    track_item = nullptr;
                 }
             }
         }
@@ -355,7 +355,7 @@ void PaintScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if (!(event->modifiers() & Qt::ControlModifier)) {
         if (paint_mod == PolygonMOD || paint_mod == ObstacleMOD) {
-            if (polygon_item != 0) {
+            if (polygon_item != nullptr) {
                 // изменение положения последней точки полигона
                 QPolygonF polygon = polygon_item->polygon();
                 polygon.pop_back();
@@ -373,18 +373,22 @@ void PaintScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 polygon_item->update();
             }
         } else if (paint_mod == ObjectMOD) {
-            if (object_item != 0) {
+            if (object_item != nullptr) {
                 object_item->setP2(event->scenePos());
                 //object_item->update();
                 //this->update();
+                QSize size_ob = object_item->rect().size().toSize();
+                emit changedStatus("Объект размера:"
+                                   + QString::number(size_ob.width())
+                                   + "x" + QString::number(size_ob.height()) + "см");
             }
         } else if (paint_mod == UnitMOD) {
-            if (unit_item != 0) {
+            if (unit_item != nullptr) {
                 // второе нажатие задает угол
                 QPointF p_start = unit_item->sceneBoundingRect().center();
                 QPointF p_end = event->scenePos();
 
-                float angle = atan2(p_end.y()-p_start.y(),p_end.x()-p_start.x());
+                double angle = atan2(p_end.y()-p_start.y(),p_end.x()-p_start.x());
                 angle = angle * 180/PI;
 
                 setRotationItem(unit_item, p_start, angle - prev_angle);
@@ -393,7 +397,7 @@ void PaintScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             }
 
         } else if (paint_mod == TrackMOD) {
-            if (track_item != 0) {
+            if (track_item != nullptr) {
 
 
                 //by default position
@@ -410,7 +414,7 @@ void PaintScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             } else {
                 this->clearSelection();
 
-                static QGraphicsItem *sel_item = 0;
+                static QGraphicsItem *sel_item = nullptr;
                 int s_count = 0;
 
                 // todo: сделано слишком сложно, сделать проще
@@ -431,7 +435,7 @@ void PaintScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                         }
                     }
                 }
-                if (!s_count && sel_item)
+                if (!s_count && sel_item && sel_item != nullptr)
                 {
                     sel_item->setSelected(false);
                     sel_item->setFlags(sel_item->flags() & ~QGraphicsItem::ItemIsSelectable);
@@ -457,12 +461,12 @@ void PaintScene::keyPressEvent(QKeyEvent *keyevent)
             if (object_item) delete object_item;
             if (track_item) delete track_item;
 
-            polygon_item = 0;
-            unit_item = 0;
-            object_item = 0;
-            track_item = 0;
+            polygon_item = nullptr;
+            unit_item = nullptr;
+            object_item = nullptr;
+            track_item = nullptr;
 
-            current_point = 0;
+            current_point = nullptr;
             magnet_points.clear();
         }
     } else if (keyevent->key()==Qt::Key_Delete)
@@ -493,13 +497,13 @@ void PaintScene::fsetMagnetPointPos(QPointF pos, QPointF *nodePos, const int Par
     magnet_points.clear();
     QList<QGraphicsItem *> under_items = this->items(pos);
     bool point_found = false;
-    PaintPoint *magnet_point = 0;
+    PaintPoint *magnet_point = nullptr;
     if (!(under_items.isEmpty()))
     {
         foreach(QGraphicsItem *item, under_items)
         {
             if(item && item->type() == PaintPoint::Type
-                    && current_point != (magnet_point = (PaintPoint *)item)
+                    && current_point != (magnet_point = dynamic_cast<PaintPoint *>(item))
                     && (ParentItemsType == -1 ||
                         (item->parentItem() && item->parentItem()->type() == ParentItemsType)))
             {

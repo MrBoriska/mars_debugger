@@ -12,12 +12,28 @@ class ControlSysService : public QObject
 {
     Q_OBJECT
 public:
-    explicit ControlSysService(QObject *parent = 0);
+    explicit ControlSysService(QObject *parent = nullptr);
     ~ControlSysService();
 
 signals:
+    /**
+     * @brief сигнал о событии потери соединения с моделью
+     */
+    void cs_disconnected();
+
+    /**
+     * @brief сигнал о событии начала работы модели
+     *        старт процесса моделирования.
+     */
     void cs_started();
+
+    /**
+     * @brief сигнал о событии ошибки при запуске моделирования
+     * @param QString - информация об ошибке
+     */
     void cs_started_error(const QString);
+
+
     void cs_ready();
     void cs_unready();
     void cs_paused();
@@ -36,7 +52,7 @@ public slots:
 
 private slots:
     void cs_connected();
-    void cs_disconnected();
+    void cs_disconnected_();
     void cs_readyRead(QString strReply);
 
 private:
@@ -52,18 +68,6 @@ private:
     void handler_unready_event();
     void handler_positions(QJsonObject jsonObject);
     void handler_get_groundType(QJsonObject jsonObject);
-
-    QJsonObject gpos_to_jsonObject(GroupPos gpos);
-    QJsonObject state_to_jsonObject(RobotState state);
-    QJsonObject pos_to_jsonObject(ItemPos pos);
-    QJsonObject vel_to_jsonObject(ItemVel vel);
-    GroupPos jsonObject_to_gpos(QJsonObject jo);
-    RobotState jsonObject_to_state(QJsonObject jo);
-    ItemPos jsonObject_to_pos(QJsonObject jo);
-    ItemVel jsonObject_to_vel(QJsonObject jo);
-    QJsonArray tpath_to_jsonArray(QPainterPath tpath);
-    QJsonObject point_to_jsonObject(QPointF point);
-    QJsonObject material_to_jsonObject(ItemMaterial material);
 };
 
 #endif // CONTROLSYSSERVICE_H

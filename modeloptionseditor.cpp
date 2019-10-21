@@ -11,13 +11,10 @@ ModelOptionsEditor::ModelOptionsEditor(QWidget *parent) :
 
     modelConfig = ModelConfig::Instance();
 
-    // set default values
-    this->config.setValue("object/captures_count", ui->object_captures_count->value());
-
     ui->maxSpeed->setMaximum(1000);
     ui->maxSpeed->setMinimum(1);
 
-    ui->maxSpeed->setValue(modelConfig->vel_max*1000);
+    ui->maxSpeed->setValue(int(modelConfig->vel_max * 1000.0));
 
     ui->sceneSize_w->setValue(modelConfig->getSceneSize().width());
     ui->sceneSize_h->setValue(modelConfig->getSceneSize().height());
@@ -64,17 +61,11 @@ void ModelOptionsEditor::closeEvent(QCloseEvent *event)
     QDialog::closeEvent(event);
 }
 
-
-void ModelOptionsEditor::on_object_captures_count_valueChanged(int value)
-{
-    this->config.setValue("object/captures_count", value);
-}
-
 void ModelOptionsEditor::on_maxSpeed_valueChanged(int speed)
 {
     // Устанавливаем соответсвия между значениями из виджета
     // и настоящим диапазоном изменения скорости
-    double v = (double)speed / 1000;
+    double v = double(speed) / 1000.0;
 
     // корректировка шага
     modelConfig->vel_max = v;
@@ -116,7 +107,7 @@ void ModelOptionsEditor::on_tableWidget_itemChanged(QTableWidgetItem *item)
 
         foreach(QGraphicsItem *m_itm, modelConfig->sceneObject->items()) {
             if (m_itm->type() == PaintPolygonItem::Type) {
-                PaintPolygonItem *mp_itm = (PaintPolygonItem*)m_itm;
+                PaintPolygonItem *mp_itm = dynamic_cast<PaintPolygonItem*>(m_itm);
                 if (!(mp_itm->isObstacle()) && mp_itm->brush().color() == modelConfig->materials[item->row()].color) {
                     mp_itm->setBrush(QBrush(item->backgroundColor()));
                 }

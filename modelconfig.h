@@ -46,7 +46,7 @@ class ModelConfig : public QObject
 {
     Q_OBJECT
 public:
-    explicit ModelConfig(QObject *parent = 0);
+    explicit ModelConfig(QObject *parent = nullptr);
     static ModelConfig* Instance();
 
     /**

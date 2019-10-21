@@ -21,7 +21,7 @@ class ItemEditor : public QDialog
     Q_OBJECT
 
 public:
-    explicit ItemEditor(QWidget *parent = 0);
+    explicit ItemEditor(QWidget *parent = nullptr);
     ~ItemEditor();
 
     QList<QGraphicsItem *> getSelectedItems();

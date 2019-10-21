@@ -10,9 +10,9 @@ ObjectItem::ObjectItem(QGraphicsItem *parent):
     editable = true;
     this->setZValue(6);
 
-    pm_1 = 0;
-    pm_2 = 0;
-    pm_center = 0;
+    pm_1 = nullptr;
+    pm_2 = nullptr;
+    pm_center = nullptr;
 
     this->setBrush(QBrush(Qt::yellow));
     QPen pen = QPen(Qt::red);
@@ -25,9 +25,9 @@ ObjectItem::ObjectItem(QGraphicsItem *parent):
 }
 
 ObjectItem::~ObjectItem() {
-    ModelConfig::Instance()->setObject(0);
+    ModelConfig::Instance()->setObject(nullptr);
 
-    qDebug() << "delete ObjectItem(" << (QGraphicsItem *)this << ")";
+    qDebug() << "delete ObjectItem(" << dynamic_cast<QGraphicsItem *>(this) << ")";
 }
 
 QPointF ObjectItem::getP1() {
@@ -138,7 +138,7 @@ void ObjectItem::select_changed() {
         if (!(this->isSelected())) {
             qDebug() << "начинаем тащить";
 
-            QList<QGraphicsItem*> other_selecting = ((PaintScene*)this->scene())->EditorDialog->getSelectedItems();
+            QList<QGraphicsItem*> other_selecting = (dynamic_cast<PaintScene*>(this->scene()))->EditorDialog->getSelectedItems();
 
             // Перебираем все привязанные к обьекту точки
             foreach(QGraphicsItem* point_, this->childItems()) {
@@ -146,7 +146,7 @@ void ObjectItem::select_changed() {
                 // предок должен быть PaintPoint
                 PaintPoint* point;
                 if (point_->type() == PaintPoint::Type)
-                    point = (PaintPoint*)point_;
+                    point = dynamic_cast<PaintPoint*>(point_);
                 else
                     continue;
 
@@ -162,7 +162,7 @@ void ObjectItem::select_changed() {
 
                         MoveGoal goal;
                         if (point2->parentItem()->type() == UnitItem::Type) {
-                            UnitItem* item_ = (UnitItem*)(point2->parentItem());
+                            UnitItem* item_ = dynamic_cast<UnitItem*>(point2->parentItem());
                             if (item_->isEditable()) {
                                 goal.point_goal = point;
                                 goal.point_moving = point2;

@@ -15,8 +15,8 @@ TrackItem::TrackItem(QPainterPath startPosPath, QGraphicsPathItem *parent) :
 }
 TrackItem::~TrackItem()
 {
-    ModelConfig::Instance()->setTrack(0);
-    qDebug() << "delete TrackItem(" << (QGraphicsItem *)this << ")";
+    ModelConfig::Instance()->setTrack(nullptr);
+    qDebug() << "delete TrackItem(" << dynamic_cast<QGraphicsItem *>(this) << ")";
 }
 
 void TrackItem::setEndPoint()

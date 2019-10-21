@@ -33,7 +33,7 @@ class PaintScene : public QGraphicsScene
 {
     Q_OBJECT
 public:
-    explicit PaintScene(QObject *parent = 0);
+    explicit PaintScene(QObject *parent = nullptr);
     ~PaintScene();
 
     // Текущие значения стилей границ и заполнения элементов
@@ -70,7 +70,8 @@ private:
 
     PaintLineItem *line_item;
     PaintPolygonItem *polygon_item;
-    UnitItem *unit_item; float prev_angle;
+    UnitItem *unit_item;
+    double prev_angle;
     ObjectItem *object_item;
     TrackItem *track_item;
     PaintPoint *current_point;

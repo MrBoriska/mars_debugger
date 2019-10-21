@@ -20,7 +20,7 @@ class PaintPolygonItem : public PaintItem, public QGraphicsPolygonItem
 public:
     enum { Type = UserType + 3 };
 
-    PaintPolygonItem(QGraphicsItem *parent = 0);
+    PaintPolygonItem(QGraphicsItem *parent = nullptr);
     ~PaintPolygonItem();
 
     int type() const { return Type; }

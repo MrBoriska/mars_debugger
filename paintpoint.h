@@ -8,7 +8,6 @@
 #include "paintitem.h"
 #include "paintlineitem.h"
 #include "paintpolygonitem.h"
-#include "paintpoint.h"
 
 /**
  * @brief Класс для описания служебных точек для привязки и т.п.
@@ -24,7 +23,7 @@ public:
     /* index = NONE - default value
      * index = CENTRAL - central point
      * index >= 0 - index nodes */
-    explicit PaintPoint(int index = NONE, QGraphicsItem *parent = 0);
+    explicit PaintPoint(int index = NONE, QGraphicsItem *parent = nullptr);
     ~PaintPoint();
 
     int type() const { return Type; }

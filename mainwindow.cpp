@@ -23,11 +23,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
-    syncModelTimer = 0;
+    syncModelTimer = nullptr;
 
     // Init Model
     modelConfig = ModelConfig::Instance();
-    modelThread = 0;
+    modelThread = nullptr;
 
     // Init Editor map
     EditorDialog = new ItemEditor(this);
@@ -79,16 +79,30 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Инициализация соединения с системой группового управления
     MODEL_READY = false;
-    controlSysService = new ControlSysService(this);
-    controlSysService->init(); // todo: maybe async call need
-    // Сигналы готовности системы управления к запуску
-    connect(controlSysService, SIGNAL(cs_ready()), this, SLOT(model_ready()));
-    connect(controlSysService, SIGNAL(cs_unready()), this, SLOT(model_unready()));
-    // Сигналы для передачи и обновления начальных данных в системе управления
-    /*connect(modelConfig, &ModelConfig::changed_start_pos,
-            this, [=](GroupPos gpos){controlSysService->set_start_pos(gpos);});
-    connect(modelConfig, &ModelConfig::changed_track_path,
-            this, [=](QPainterPath path){controlSysService->set_track_path(path);});*/
+    controlSysService = nullptr;
+}
+
+
+void MainWindow::on_reconnect_triggered()
+{
+    // Инициализация соединения с системой группового управления
+    if (controlSysService == nullptr) {
+        controlSysService = new ControlSysService(this);
+        controlSysService->init(); // todo: maybe async call need
+        // Сигналы готовности системы управления к запуску
+        connect(controlSysService, SIGNAL(cs_ready()), this, SLOT(model_ready()));
+        connect(controlSysService, SIGNAL(cs_unready()), this, SLOT(model_unready()));
+        connect(controlSysService, SIGNAL(cs_disconnected()), this, SLOT(model_disconnect()));
+        // Сигналы для передачи и обновления начальных данных в системе управления
+        /*connect(modelConfig, &ModelConfig::changed_start_pos,
+                this, [=](GroupPos gpos){controlSysService->set_start_pos(gpos);});
+        connect(modelConfig, &ModelConfig::changed_track_path,
+                this, [=](QPainterPath path){controlSysService->set_track_path(path);});*/
+
+        model_ready();
+
+        ui->statusBar->showMessage("Model connected", 2000);
+    }
 }
 
 void MainWindow::graphicScene_sceneRectChanged(QRectF rect) {
@@ -150,15 +164,15 @@ void MainWindow::on_add_unit_toggled(bool checked)
     QPixmap(":/pictures/icons/unit.png");
 
     graphicScene->setPaintMod(UnitMOD);
-    ui->statusBar->showMessage("Режим расстановки юнитов: "
-                               + QString::number((int)checked), 2000);
+    ui->statusBar->showMessage("Режим расстановки роботов: "
+                               + QString::number(int(checked)), 2000);
 }
 
 void MainWindow::on_add_track_toggled(bool checked)
 {
     graphicScene->setPaintMod(TrackMOD);
     ui->statusBar->showMessage("Режим задания траектории: "
-                               + QString::number((int)checked), 2000);
+                               + QString::number(int(checked)), 2000);
 }
 
 void MainWindow::on_open_editor_toggled(bool checked)
@@ -341,7 +355,7 @@ void MainWindow::showStopSimulation()
 {
     qDebug() << "MainWindow::showStopSimulation()";
 
-    if (syncModelTimer != 0) {
+    if (syncModelTimer != nullptr) {
         syncModelTimer->stop();
         //delete syncModelTimer;
         //syncModelTimer = 0;
@@ -435,7 +449,7 @@ void MainWindow::setTransformation(QGraphicsItem *item, ItemPos pos)
     QPointF loc_center = item->scenePos();
 
     // Осуществляем перемещение робота
-    if ( (pos.x-loc_center.x()) || (pos.y-loc_center.y()) ) {
+    if ( (pos.x-loc_center.x()) != 0.0 || (pos.y-loc_center.y()) != 0.0 ) {
         // матрица переноса
         item->setPos(pos.x, pos.y);
     }
@@ -446,7 +460,7 @@ void MainWindow::setTransformation(QGraphicsItem *item, ItemPos pos)
     double alfa = pos.alfa * 180/M_PI;
 
     // Осуществляем поворот робота
-    if ( (alfa - item->rotation()) ) {
+    if ( (alfa - item->rotation()) != 0.0 ) {
         // матрица поворота
         t.translate(loc_center.x(), loc_center.y());
         t.rotate(alfa - item->rotation());

@@ -19,7 +19,7 @@ class ObjectItem : public PaintItem, public QGraphicsRectItem
 public:
     enum { Type = UserType + 6 };
 
-    ObjectItem(QGraphicsItem *parent = 0);
+    ObjectItem(QGraphicsItem *parent = nullptr);
     ~ObjectItem();
 
     int type() const { return Type; }

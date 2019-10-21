@@ -23,10 +23,10 @@ PaintPoint::PaintPoint(int index, QGraphicsItem *parent) :
     if (index >= -1 && parent) {
         this->index = index;
         if (parent->type() == PaintPolygonItem::Type) {
-            this->createPoint(((PaintPolygonItem *)parent)->polygon().at(index), radius);
+            this->createPoint((dynamic_cast<PaintPolygonItem *>(parent))->polygon().at(index), radius);
         }
         else if (parent->type() == ObjectItem::Type) {
-            this->createPoint(((ObjectItem *)parent)->getMagnetPointPos(index), radius);
+            this->createPoint((dynamic_cast<ObjectItem *>(parent))->getMagnetPointPos(index), radius);
         }
         else if (parent->type() == UnitItem::Type) {
             this->createPoint(QPoint(0,0), radius);
@@ -42,7 +42,7 @@ PaintPoint::PaintPoint(int index, QGraphicsItem *parent) :
 
 PaintPoint::~PaintPoint()
 {
-    qDebug() << "delete PaintPoint(" << (QGraphicsItem *)this << ")";
+    qDebug() << "delete PaintPoint(" << dynamic_cast<QGraphicsItem *>(this) << ")";
 
     // unbind от присоединенных points
     foreach(PaintPoint* point, nodes) {
@@ -68,9 +68,9 @@ void PaintPoint::bindNode(PaintPoint* point_item)
 {
     nodes.append(point_item);
 
-    qDebug() << "PaintPoint(" << (QGraphicsItem *)this << ")"
+    qDebug() << "PaintPoint(" << dynamic_cast<QGraphicsItem *>(this) << ")"
              << " by node " << QString::number(this->index)
-             << " bind " << "PaintPoint(" << (QGraphicsItem *)(point_item) << ")"
+             << " bind " << "PaintPoint(" << dynamic_cast<QGraphicsItem *>(point_item) << ")"
              << " by node " << QString::number(point_item->index);
 }
 
@@ -112,7 +112,7 @@ void PaintPoint::pos_changed()
     if (index >= -1 && this->parentItem()) {
         if (this->parentItem()->type() == PaintPolygonItem::Type) {
             // Обновляем положение присоединенного узла полигона согласно положению точки
-            PaintPolygonItem *poly_item = (PaintPolygonItem*)(this->parentItem());
+            PaintPolygonItem *poly_item = dynamic_cast<PaintPolygonItem*>(this->parentItem());
             QPolygonF polygon = poly_item->polygon();
             polygon[this->index] = this->pos();
             poly_item->setPolygon(polygon);

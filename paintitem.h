@@ -18,15 +18,15 @@ class PaintItem : public QObject
 public:
     enum { Type = QVariant::UserType + 10 };
 
-    explicit PaintItem(QObject *parent = 0);
+    explicit PaintItem(QObject *parent = nullptr);
 
     int type() const { return Type; }
 
     virtual bool isEditable() {return true;}
 
 signals:
-    void selectChanged(QGraphicsItem *item = 0);
-    void positionChanged(QGraphicsItem *item = 0);
+    void selectChanged(QGraphicsItem *item = nullptr);
+    void positionChanged(QGraphicsItem *item = nullptr);
 
 };
 

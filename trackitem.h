@@ -17,7 +17,7 @@ class TrackItem : public PaintItem, public QGraphicsPathItem
     Q_OBJECT
 public:
     enum { Type = UserType + 7 };
-    explicit TrackItem(QPainterPath startPosPath, QGraphicsPathItem *parent = 0);
+    explicit TrackItem(QPainterPath startPosPath, QGraphicsPathItem *parent = nullptr);
     ~TrackItem();
 
     int type() const { return Type; }

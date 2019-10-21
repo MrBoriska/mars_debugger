@@ -34,6 +34,26 @@ private slots:
 
     void on_removeMat_clicked();
 
+    void on_step_valueChanged(int value);
+
+    void on_step_spin_valueChanged(double value);
+
+    void on_interval_valueChanged(int value);
+
+    void on_interval_spin_valueChanged(double value);
+
+    void on_trajectory_P_spin_valueChanged(double arg1);
+
+    void on_trajectory_w_thres_offset_valueChanged(double arg1);
+
+    void on_trajectory_w_thres_valueChanged(double arg1);
+
+    void on_trajectory_wI_valueChanged(double arg1);
+
+    void on_trajectory_Pv_valueChanged(double arg1);
+
+    void on_modelAddress_editingFinished();
+
 signals:
     void sceneRectChanged(QRectF);
     void closed();

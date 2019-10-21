@@ -25,6 +25,8 @@ struct ItemVel {
 struct RobotState {
     ItemPos pos;
     ItemVel vel;
+    ItemPos pos_real;
+    ItemVel vel_real;
 };
 
 struct ItemMaterial {
@@ -66,15 +68,16 @@ public:
      */
     double vel_max;
 
-    // Mutable values:
-    double step_max;
-    double step_min;
-    int interval_max;
-    int interval_min;
+    /**
+     * @brief Настройки регулятора движения по траектории
+     */
+    double trajectory_P;
+    double trajectory_vP;
+    double trajectory_w_thres_offset;
+    double trajectory_w_thres;
+    double trajectory_wI;
 
     PaintScene* sceneObject;
-
-    void reset();
 
     void addUnit(UnitItem *unit);
     void delUnit(UnitItem *unit);
@@ -99,6 +102,25 @@ public:
 
     ItemMaterial getItemMaterialByColor(QColor color);
 
+    QString getModelAddress();
+    void setModelAddress(QString model_address);
+
+    void jsonToScene(QJsonObject jo);
+    void sceneToJson(QJsonObject* jo);
+    static QJsonObject gpos_to_jsonObject(GroupPos gpos);
+    static QJsonObject state_to_jsonObject(RobotState state);
+    static QJsonObject pos_to_jsonObject(ItemPos pos);
+    static QJsonObject vel_to_jsonObject(ItemVel vel);
+    static GroupPos jsonObject_to_gpos(QJsonObject jo);
+    static RobotState jsonObject_to_state(QJsonObject jo);
+    static ItemPos jsonObject_to_pos(QJsonObject jo);
+    static ItemVel jsonObject_to_vel(QJsonObject jo);
+    static QJsonArray tpath_to_jsonArray(QPainterPath tpath);
+    static QJsonObject point_to_jsonObject(QPointF point);
+    static QJsonObject material_to_jsonObject(ItemMaterial material);
+    ItemMaterial jsonObject_to_material(QJsonObject jo);
+    QPointF jsonObject_to_point(QJsonObject jpoint);
+
 private:
     static ModelConfig* _instance;
 
@@ -108,6 +130,7 @@ private:
     ObjectItem *object_item;
     QSize sceneSize;
     double sceneBorderWidth;
+    QString modelAddress;
 };
 
 #endif // MODELCONFIG_H

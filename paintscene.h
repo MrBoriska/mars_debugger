@@ -90,6 +90,8 @@ private:
 public:
     // For "emit removedItem()" signal
     void removeItem(QGraphicsItem *);
+    bool isBasePolygon(PaintPolygonItem *p);
+    void safeClear();
 private:
     // Для рисования используем события мыши
     void mousePressEvent(QGraphicsSceneMouseEvent *);

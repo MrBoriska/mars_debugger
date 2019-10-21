@@ -125,37 +125,90 @@ void MainWindow::showStatus(QString status)
 void MainWindow::on_new_map_triggered()
 {
     ui->statusBar->showMessage("Создание новой карты...", 2000);
+
 }
 
 void MainWindow::on_open_map_triggered()
 {
     ui->statusBar->showMessage("Открытие карты...", 2000);
+
+
+    QString filename = QFileDialog::getOpenFileName(this,
+        tr("Открыть проект"), "",
+        tr("MARS project files (*.mspj);;All Files (*)"));
+
+    qDebug() << filename;
+
+    if (filename.isEmpty())
+        return;
+    else {
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly)) {
+            QMessageBox::information(this, tr("Unable to read file"), file.errorString());
+            return;
+        }
+
+        QJsonParseError parse_error;
+        QJsonDocument jsonResponse = QJsonDocument::fromJson(file.readAll(), &parse_error);
+
+        // Validate and send validation error
+        if (jsonResponse.isNull()) {
+            return;
+        }
+
+        modelConfig->jsonToScene(jsonResponse.object());
+    }
+
 }
 
 void MainWindow::on_save_map_triggered()
 {
     ui->statusBar->showMessage("Сохранение карты...", 2000);
+
+    QString filename = QFileDialog::getSaveFileName(this,
+        tr("Сохранить проект"), "",
+        tr("MARS project files (*.mspj);;All Files (*)"));
+
+    qDebug() << filename;
+
+
+    if (filename.isEmpty())
+        return;
+    else {
+        QFile file(filename);
+        if (!file.open(QIODevice::WriteOnly)) {
+            QMessageBox::information(this, tr("Unable to open file"),
+                file.errorString());
+            return;
+        }
+
+        QJsonObject data;
+
+        modelConfig->sceneToJson(&data);
+
+        file.write(QJsonDocument(data).toJson());
+    }
 }
 
 void MainWindow::on_add_obstacle_toggled(bool checked)
 {
     graphicScene->setPaintMod(ObstacleMOD);
     ui->statusBar->showMessage("Режим рисования препятствия: "
-                               + QString::number((int)checked), 2000);
+                               + QString::number(int(checked)), 2000);
 }
 
 void MainWindow::on_add_polygon_toggled(bool checked)
 {
     graphicScene->setPaintMod(PolygonMOD);
     ui->statusBar->showMessage("Режим рисования полигона: "
-                               + QString::number((int)checked), 2000);
+                               + QString::number(int(checked)), 2000);
 }
 
 void MainWindow::on_add_object_toggled(bool checked)
 {
     graphicScene->setPaintMod(ObjectMOD);
     ui->statusBar->showMessage("Режим расстановки обьектов управления: "
-                               + QString::number((int)checked), 2000);
+                               + QString::number(int(checked)), 2000);
 }
 
 void MainWindow::on_add_unit_toggled(bool checked)
@@ -226,7 +279,7 @@ void MainWindow::on_open_editor_toggled(bool checked)
 
 
     ui->statusBar->showMessage("Режим редактирования элементов: "
-                               + QString::number((int)checked), 2000);
+                               + QString::number(int(checked)), 2000);
 }
 
 

@@ -39,6 +39,34 @@ PaintScene::~PaintScene()
 
 }
 
+void PaintScene::safeClear()
+{
+    this->clear();
+
+    basePolygon = nullptr;
+    baseBorderPolygon = nullptr;
+    polygon_item = nullptr;
+    unit_item = nullptr;
+    object_item = nullptr;
+    track_item = nullptr;
+    current_point = nullptr;
+    paint_mod = OffMOD;
+    prev_angle = 0;
+    pen = QPen(Qt::black);
+    pen.setWidth(3);
+    brush = QBrush(Qt::lightGray);
+}
+
+
+bool PaintScene::isBasePolygon(PaintPolygonItem *p)
+{
+    if (p == basePolygon)
+        return true;
+    if (p == baseBorderPolygon)
+        return true;
+    return false;
+}
+
 void PaintScene::sceneRectShow(const QRectF &rect)
 {
     qDebug() << rect;

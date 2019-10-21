@@ -19,6 +19,17 @@ ModelOptionsEditor::ModelOptionsEditor(QWidget *parent) :
     ui->sceneSize_w->setValue(modelConfig->getSceneSize().width());
     ui->sceneSize_h->setValue(modelConfig->getSceneSize().height());
 
+    ui->modelAddress->setText(modelConfig->getModelAddress());
+
+    ui->step_spin->setValue(modelConfig->step);
+    ui->interval->setValue(modelConfig->view_interval); // ms -> sec
+
+    ui->trajectory_P_spin->setValue(modelConfig->trajectory_P);
+    ui->trajectory_Pv->setValue(modelConfig->trajectory_vP);
+    ui->trajectory_w_thres->setValue(modelConfig->trajectory_w_thres);
+    ui->trajectory_w_thres_offset->setValue(modelConfig->trajectory_w_thres_offset);
+    ui->trajectory_wI->setValue(modelConfig->trajectory_wI);
+
     // todo: need develop algoritm for adding and removing materials table
     ui->addMat->setEnabled(false);
     ui->removeMat->setEnabled(false);
@@ -135,4 +146,56 @@ void ModelOptionsEditor::on_removeMat_clicked()
 {
     // todo: update config materials list
     ui->tableWidget->removeRow(ui->tableWidget->currentRow());
+}
+
+void ModelOptionsEditor::on_step_valueChanged(int value)
+{
+    ui->step_spin->setValue(double(value)/1000.0);
+}
+
+void ModelOptionsEditor::on_step_spin_valueChanged(double value)
+{
+    ui->step->setValue(int(1000*value));
+    modelConfig->step = value;
+}
+
+void ModelOptionsEditor::on_interval_valueChanged(int value)
+{
+    ui->interval_spin->setValue(double(value)/1000.0); // ms -> sec
+    modelConfig->view_interval = value;
+}
+
+void ModelOptionsEditor::on_interval_spin_valueChanged(double value)
+{
+    ui->interval->setValue(int(1000.0*value)); // sec -> ms
+}
+
+void ModelOptionsEditor::on_trajectory_P_spin_valueChanged(double arg1)
+{
+    modelConfig->trajectory_P = arg1;
+}
+
+void ModelOptionsEditor::on_trajectory_w_thres_offset_valueChanged(double arg1)
+{
+    modelConfig->trajectory_w_thres_offset = arg1;
+}
+
+void ModelOptionsEditor::on_trajectory_w_thres_valueChanged(double arg1)
+{
+    modelConfig->trajectory_w_thres = arg1;
+}
+
+void ModelOptionsEditor::on_trajectory_wI_valueChanged(double arg1)
+{
+    modelConfig->trajectory_wI = arg1;
+}
+
+void ModelOptionsEditor::on_trajectory_Pv_valueChanged(double arg1)
+{
+    modelConfig->trajectory_vP = arg1;
+}
+
+void ModelOptionsEditor::on_modelAddress_editingFinished()
+{
+    modelConfig->setModelAddress(ui->modelAddress->text());
 }

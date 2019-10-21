@@ -263,24 +263,35 @@ void MainWindow::model_unready()
 void MainWindow::on_start_model_triggered()
 {
 
-    if (modelConfig->getTrack() == 0
-         || modelConfig->getObject() == 0
+    if (modelConfig->getTrack() == nullptr
+         || modelConfig->getObject() == nullptr
          || modelConfig->getUnits().isEmpty())
     {
         QMessageBox::warning(
-            (QWidget *)(this),
+            dynamic_cast<QWidget *>(this),
             "info",
             "Для запуска модели необходимо добавить обьект, роботов и траекторию"
         );
         return;
     }
 
+    if (controlSysService == nullptr)
+    {
+        QMessageBox::warning(
+            dynamic_cast<QWidget *>(this),
+            "info",
+            "Отсутсвует соединение с моделью"
+        );
+        return;
+    }
 
     ui->statusBar->showMessage("Отправляем начальное положение роботов и обьекта...");
     modelConfig->setStartPosition();
 
     controlSysService->set_config_data(modelConfig);
+    QThread::sleep(2);
     controlSysService->set_start_pos(modelConfig->getStartPosition());
+    QThread::sleep(2);
     ui->statusBar->showMessage("Отправляем траекторию движения обьекта...");
     controlSysService->set_track_path(modelConfig->getTrackPath());
 
@@ -294,6 +305,20 @@ void MainWindow::on_start_model_triggered()
     ui->start_model->setEnabled(false);
     ui->pause_model->setEnabled(false);
     ui->stop_model->setEnabled(false);
+
+    // Update trajectory logs
+    foreach(QGraphicsEllipseItem* item, real_trajectory_items) {
+        item->setSelected(false);
+        item->scene()->removeItem(item);
+        delete item;
+    }
+    real_trajectory_items.clear();
+    foreach(QGraphicsEllipseItem* item, target_trajectory_items) {
+        item->setSelected(false);
+        item->scene()->removeItem(item);
+        delete item;
+    }
+    target_trajectory_items.clear();
 }
 
 void MainWindow::model_started()
@@ -301,7 +326,7 @@ void MainWindow::model_started()
     ui->statusBar->showMessage("Текущее время моделирования: 0");
 
     // Запуск синхронизации выходных данных системы управления и виртуальной сцены
-    if (syncModelTimer == 0) {
+    if (syncModelTimer == nullptr) {
         syncModelTimer = new QTimer(this);
         //connect(syncModelTimer, SIGNAL(timeout()), this, SLOT(syncModelAndView()));
         connect(syncModelTimer, &QTimer::timeout, [=](){
@@ -322,8 +347,7 @@ void MainWindow::model_started()
     if (ui->open_model_viewer->isChecked()) {
         ModelViewer->startAnalisis(modelConfig->getUnits().length());
         connect(this, SIGNAL(changedGroupPos(GroupPos, QTime)),
-                ModelViewer, SLOT(async_addState(GroupPos, QTime)),
-                Qt::QueuedConnection);
+                ModelViewer, SLOT(async_addState(GroupPos, QTime)));
     }
 
     // Настройка кнопок управления моделированием
@@ -333,7 +357,6 @@ void MainWindow::model_started()
     connect(ui->pause_model, SIGNAL(triggered(bool)), this, SLOT(model_pause_trigger()));
     connect(ui->stop_model, SIGNAL(triggered(bool)), this, SLOT(model_stop_trigger()));
 }
-
 void MainWindow::model_pause_trigger()
 {
     controlSysService->send_pause_request();
@@ -372,6 +395,21 @@ void MainWindow::showStopSimulation()
     );
     ui->statusBar->showMessage("Текущее время моделирования: 0");
 
+    // Update trajectory logs
+    foreach(QGraphicsEllipseItem* item, real_trajectory_items) {
+        item->setSelected(false);
+        item->scene()->removeItem(item);
+        delete item;
+    }
+    real_trajectory_items.clear();
+    foreach(QGraphicsEllipseItem* item, target_trajectory_items) {
+        item->setSelected(false);
+        item->scene()->removeItem(item);
+        delete item;
+    }
+    target_trajectory_items.clear();
+
+
     // Элементы управления
     ui->start_model->setEnabled(true);
     ui->pause_model->setEnabled(false);
@@ -389,6 +427,19 @@ void MainWindow::showStopSimulation()
     disconnect(controlSysService, SIGNAL(cs_started_error(QString)), this, SLOT(model_started_error(QString)));
     disconnect(controlSysService, SIGNAL(cs_stopped()), this, SLOT(showStopSimulation()));
 
+}
+
+void MainWindow::model_disconnect()
+{
+    ui->statusBar->showMessage("Model disconnected!", 2000);
+
+    model_unready();
+
+    delete syncModelTimer;
+    syncModelTimer = nullptr;
+
+    delete controlSysService;
+    controlSysService = nullptr;
 }
 
 void MainWindow::syncModelAndView(GroupPos gpos, QTime time)
@@ -410,16 +461,29 @@ void MainWindow::syncModelAndView(GroupPos gpos, QTime time)
         + time.toString("hh:mm:ss.zzz")
     );
 
+    RobotState start_st = modelConfig->getStartPosition().object_pos;
+    int i = 0;
+    foreach (RobotState rst, gpos.robots_pos) {
+        // Trajectory logging: real trajectory
+        double R = 3;
+        QGraphicsEllipseItem *tp = new QGraphicsEllipseItem();
+        tp->setRect(-R,-R,2*R,2*R);
+        tp->setPos(rst.pos_real.x+start_st.pos.x, rst.pos_real.y+start_st.pos.y);
+        tp->setZValue(10);
+        tp->setBrush(QBrush(Qt::green));
+        graphicScene->addItem(tp);
+        real_trajectory_items.append(tp);
 
-
-    QGraphicsEllipseItem *tp = new QGraphicsEllipseItem();
-    double R = 3;
-    tp->setRect(-R,-R,2*R,2*R);
-    tp->setPos(gpos.object_pos.pos.x,gpos.object_pos.pos.y);
-    tp->setZValue(10);
-    graphicScene->addItem(tp);
-
-
+        // Trajectory logging: target trajectory
+        QGraphicsEllipseItem *tp_ = new QGraphicsEllipseItem();
+        tp_->setRect(-R,-R,2*R,2*R);
+        tp_->setPos(rst.pos.x, rst.pos.y);
+        tp_->setZValue(10);
+        tp_->setBrush(QBrush(Qt::red));
+        graphicScene->addItem(tp_);
+        target_trajectory_items.append(tp_);
+        i++;
+    }
 
     // Испускаем сигнал для анализа перемещения
     emit changedGroupPos(gpos, time);

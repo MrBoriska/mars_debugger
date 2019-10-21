@@ -59,9 +59,11 @@ private slots:
     void removedItemOnScene(QGraphicsItem *);
 
     // Методы для сихронизации между моделью и отображением
+    void on_reconnect_triggered();
     void syncModelAndView(GroupPos gpos, QTime time);
     //void showFinishSimulation();
     void showStopSimulation();
+    void model_disconnect();
     void model_ready();
     void model_unready();
     void model_started();
@@ -88,6 +90,10 @@ private:
 
     void setTransformation(QGraphicsItem *item, ItemPos pos);
     void setPositionByGroupPos(QList<UnitItem *> units_items, ObjectItem *object_item, GroupPos positions);
+
+    QList<QGraphicsEllipseItem *> real_trajectory_items;
+    QList<QGraphicsEllipseItem *> target_trajectory_items;
+
 };
 
 #endif // MAINWINDOW_H

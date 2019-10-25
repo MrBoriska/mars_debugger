@@ -39,6 +39,7 @@ void ControlSysService::init()
     address.prepend("ws://");
 
     qDebug() << "connecting...";
+    qDebug() << address;
 
     // this is not blocking call
     self_socket->open(QUrl(address));

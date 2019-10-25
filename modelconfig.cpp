@@ -2,21 +2,26 @@
 
 ModelConfig::ModelConfig(QObject *parent) : QObject(parent)
 {
-    step = 0.001;
+    step = 0.01;
     interval = 10; // ms
     view_interval = 200; // ms
-    target_realtime_factor = 0.9;
-    vel_max = 0.5; // m/s
+    target_realtime_factor = 0.6;
 
     sceneSize = QSize(1000,700);
     sceneBorderWidth = 15;
-    modelAddress = "localhost:8888";
+    modelAddress = "localhost:9999";
 
-    trajectory_P = 100.00; // Kp
-    trajectory_vP = 100.00; // Kvp
-    trajectory_w_thres_offset = 0.0; // Kd
-    trajectory_w_thres = 0.15;
-    trajectory_wI = 0.0; // Ki
+    robot_vmax = 0.5;
+    robot_wmax = 3.0;
+    robot_amax = 0.2;
+    trajectory_v_P = 100.0;
+    trajectory_v_I = 0.0;
+    trajectory_v_D = 0.0;
+    trajectory_w_P = 100.0;
+    trajectory_w_I = 0.15;
+    trajectory_w_D = 0.0;
+    trajectory_v_thres = 0.7;
+    trajectory_w_thres = 3.0;
 
     track_item = nullptr;
     object_item = nullptr;
@@ -180,7 +185,18 @@ void ModelConfig::jsonToScene(QJsonObject jo)
     // Загрузка параметров
     this->interval = jo.value("interval").toInt();
     this->step = jo.value("step").toDouble();
-    this->vel_max = jo.value("vel_max").toDouble();
+
+    this->robot_vmax = jo.value("robot_vmax").toDouble();
+    this->robot_wmax = jo.value("robot_wmax").toDouble();
+    this->robot_amax = jo.value("robot_amax").toDouble();
+    this->trajectory_v_P = jo.value("trajectory_v_P").toDouble();
+    this->trajectory_v_I = jo.value("trajectory_v_I").toDouble();
+    this->trajectory_v_D = jo.value("trajectory_v_D").toDouble();
+    this->trajectory_w_P = jo.value("trajectory_w_P").toDouble();
+    this->trajectory_w_I = jo.value("trajectory_w_I").toDouble();
+    this->trajectory_w_D = jo.value("trajectory_w_D").toDouble();
+    this->trajectory_v_thres = jo.value("trajectory_v_thres").toDouble();
+    this->trajectory_w_thres = jo.value("trajectory_w_thres").toDouble();
 
     QSize size;
     size.setWidth(jo.value("scene_size").toObject().value("width").toInt());
@@ -199,6 +215,9 @@ void ModelConfig::jsonToScene(QJsonObject jo)
         QJsonObject jo_ = materials[i].toObject();
         this->materials.append(jsonObject_to_material(jo_));
     }
+    this->defaultMaterial = this->getItemMaterialByColor(
+        QColor(jo.value("default_mat_color").toString())
+    );
 
     // Обновление сцены
     this->sceneObject->safeClear();
@@ -209,7 +228,8 @@ void ModelConfig::jsonToScene(QJsonObject jo)
     foreach(QJsonValue value, map) {
         QJsonObject jo_ = value.toObject();
         // Загрузка полигона(область, препятствие)
-        if (jo_.value("type").toString() == "ground_polygon") {
+        if (jo_.value("type").toString() == "ground_polygon"
+                || jo_.value("type").toString() == "obstacle_polygon") {
             QPolygonF polygon;
             QJsonArray points = jo_.value("points").toArray();
             int count = points.count();
@@ -227,6 +247,36 @@ void ModelConfig::jsonToScene(QJsonObject jo)
 
             this->sceneObject->addItem(polygon_item);
         }
+
+        if (jo_.value("type").toString() == "object") {
+            ObjectItem *object_item = new ObjectItem();
+            object_item->setRectByTwoPoints(
+                jsonObject_to_point(jo_.value("p1").toObject()),
+                jsonObject_to_point(jo_.value("p2").toObject())
+            );
+
+            this->sceneObject->addItem(object_item);
+            this->setObject(object_item);
+        }
+        if (jo_.value("type").toString() == "robot") {
+            QPointF unitPos = jsonObject_to_point(jo_.value("pos").toObject());
+
+            UnitItem *unit_item = new UnitItem(unitPos);
+            QPointF p_start = unit_item->sceneBoundingRect().center();
+            qreal angle = jo_.value("direction").toDouble();
+
+            this->sceneObject->setRotationItem(unit_item, p_start, angle);
+            this->sceneObject->addItem(unit_item);
+            this->units.clear();
+            this->addUnit(unit_item);
+        }
+        if (jo_.value("type").toString() == "trajectory") {
+            QPainterPath tpath = jsonArray_to_tpath(jo_.value("tpath").toArray());
+            track_item = new TrackItem(tpath);
+            this->sceneObject->addItem(track_item);
+            track_item->setEndPoint();
+            this->setTrack(track_item);
+        }
     }
 }
 
@@ -237,12 +287,17 @@ void ModelConfig::sceneToJson(QJsonObject *jo)
     jo->insert("interval", this->interval);
     jo->insert("step", this->step);
     jo->insert("target_realtime_factor", this->target_realtime_factor);
-    jo->insert("vel_max", this->vel_max);
-    jo->insert("trajectory_P", this->trajectory_P);
-    jo->insert("trajectory_vP", this->trajectory_vP);
-    jo->insert("trajectory_w_thres_offset", this->trajectory_w_thres_offset);
+    jo->insert("robot_vmax", this->robot_vmax);
+    jo->insert("robot_wmax", this->robot_wmax);
+    jo->insert("robot_amax", this->robot_amax);
+    jo->insert("trajectory_v_P", this->trajectory_v_P);
+    jo->insert("trajectory_v_I", this->trajectory_v_I);
+    jo->insert("trajectory_v_D", this->trajectory_v_D);
+    jo->insert("trajectory_w_P", this->trajectory_w_P);
+    jo->insert("trajectory_w_I", this->trajectory_w_I);
+    jo->insert("trajectory_w_D", this->trajectory_w_D);
+    jo->insert("trajectory_v_thres", this->trajectory_v_thres);
     jo->insert("trajectory_w_thres", this->trajectory_w_thres);
-    jo->insert("trajectory_wI", this->trajectory_wI);
 
     // Сериализация таблицы грунтов
     QJsonArray materials_;
@@ -250,7 +305,7 @@ void ModelConfig::sceneToJson(QJsonObject *jo)
         materials_.append(material_to_jsonObject(mat));
     }
     jo->insert("materials",materials_);
-
+    jo->insert("default_mat_color", this->defaultMaterial.color.name());
 
     // Сериализация рабочей области сцены
     QJsonObject jsize;
@@ -272,7 +327,6 @@ void ModelConfig::sceneToJson(QJsonObject *jo)
             if (this->sceneObject->isBasePolygon(polygon_item))
                 continue;
 
-            jo_.insert("type","ground_polygon");
             QJsonArray points;
             QPolygonF polygon = polygon_item->polygon();
             int count = polygon.count();
@@ -284,18 +338,21 @@ void ModelConfig::sceneToJson(QJsonObject *jo)
             jo_.insert("editable", polygon_item->isEditable());
             jo_.insert("is_obstacle", polygon_item->isObstacle());
             jo_.insert("z_value", polygon_item->zValue());
-            if (!(polygon_item->isObstacle()))
+            if (!(polygon_item->isObstacle())) {
+                jo_.insert("type","ground_polygon");
                 jo_.insert("material", polygon_item->getMaterialColor().name());
-
+            } else {
+                jo_.insert("type", "obstacle_polygon");
+            }
             map.append(jo_);
             continue;
         }
 
+        // Сериализация обьекта управления
         if (item->type() == ObjectItem::Type) {
             ObjectItem *object_item = dynamic_cast<ObjectItem *>(item);
 
             jo_.insert("type","object");
-
             jo_.insert("p1", point_to_jsonObject(object_item->getP1()));
             jo_.insert("p2", point_to_jsonObject(object_item->getP2()));
 
@@ -303,6 +360,7 @@ void ModelConfig::sceneToJson(QJsonObject *jo)
             continue;
         }
 
+        // Сериализация робота
         if (item->type() == UnitItem::Type) {
             UnitItem *unit_item = dynamic_cast<UnitItem *>(item);
 
@@ -314,11 +372,11 @@ void ModelConfig::sceneToJson(QJsonObject *jo)
             continue;
         }
 
+        // Сериализация начальной траектории
         if (item->type() == TrackItem::Type) {
             TrackItem *track_item = dynamic_cast<TrackItem *>(item);
 
             jo_.insert("type","trajectory");
-
             jo_.insert("pos", point_to_jsonObject(track_item->scenePos()));
             jo_.insert("tpath", tpath_to_jsonArray(track_item->path()));
 
@@ -337,17 +395,20 @@ QJsonArray ModelConfig::tpath_to_jsonArray(QPainterPath tpath)
 {
     int length = tpath.elementCount();
     QJsonArray ja;
-    for(int i=1;i<length;i++) {
+
+    for(int i=0;i<length;i++) {
         QJsonObject jo;
         QPainterPath::Element el = tpath.elementAt(i);
-
         if (el.isLineTo())
             jo.insert("type", "LineTo");
         else if (el.isCurveTo())
             jo.insert("type", "CurveTo");
+        else if (el.isMoveTo())
+            // type for start position
+            jo.insert("type", "MoveTo");
         else {
-            // Error! Unsupported element of track
-            return QJsonArray();
+            qDebug() << "Error! Unsupported element of track";
+            continue;
         }
 
         QPointF point = el;
@@ -417,7 +478,29 @@ QJsonObject ModelConfig::vel_to_jsonObject(ItemVel vel)
     jo.insert("w",vel.w);
     return jo;
 }
+QPainterPath ModelConfig::jsonArray_to_tpath(QJsonArray ja)
+{
+    QPainterPath tpath;
+    int length = ja.size();
+    for(int i=0;i<length;i++) {
+        QJsonObject jo = ja[i].toObject();
 
+        if (jo.value("type").toString() == "LineTo")
+            tpath.lineTo(
+                jo.value("point").toObject().value("x").toDouble(),
+                jo.value("point").toObject().value("y").toDouble()
+            );
+        else if (jo.value("type").toString() == "MoveTo")
+            tpath.moveTo(
+                jo.value("point").toObject().value("x").toDouble(),
+                jo.value("point").toObject().value("y").toDouble()
+            );
+        else {
+            qDebug() << "Error! Unsupported element of track(QJsonArray)";
+        }
+    }
+    return tpath;
+}
 GroupPos ModelConfig::jsonObject_to_gpos(QJsonObject jo)
 {
     GroupPos gpos;

@@ -64,18 +64,23 @@ public:
     double target_realtime_factor;
 
     /**
-     * @brief максимальная скорость робота(которую он стремится достичь)
+     * @brief общие ограничения на перемещение
      */
-    double vel_max;
+    double robot_vmax;
+    double robot_wmax;
+    double robot_amax;
 
     /**
      * @brief Настройки регулятора движения по траектории
      */
-    double trajectory_P;
-    double trajectory_vP;
-    double trajectory_w_thres_offset;
+    double trajectory_v_P;
+    double trajectory_v_I;
+    double trajectory_v_D;
+    double trajectory_w_P;
+    double trajectory_w_I;
+    double trajectory_w_D;
+    double trajectory_v_thres;
     double trajectory_w_thres;
-    double trajectory_wI;
 
     PaintScene* sceneObject;
 
@@ -111,6 +116,7 @@ public:
     static QJsonObject state_to_jsonObject(RobotState state);
     static QJsonObject pos_to_jsonObject(ItemPos pos);
     static QJsonObject vel_to_jsonObject(ItemVel vel);
+    QPainterPath jsonArray_to_tpath(QJsonArray ja);
     static GroupPos jsonObject_to_gpos(QJsonObject jo);
     static RobotState jsonObject_to_state(QJsonObject jo);
     static ItemPos jsonObject_to_pos(QJsonObject jo);

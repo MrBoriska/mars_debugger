@@ -11,10 +11,6 @@ ModelOptionsEditor::ModelOptionsEditor(QWidget *parent) :
 
     modelConfig = ModelConfig::Instance();
 
-    ui->maxSpeed->setMaximum(1000);
-    ui->maxSpeed->setMinimum(1);
-
-    ui->maxSpeed->setValue(int(modelConfig->vel_max * 1000.0));
 
     ui->sceneSize_w->setValue(modelConfig->getSceneSize().width());
     ui->sceneSize_h->setValue(modelConfig->getSceneSize().height());
@@ -24,15 +20,21 @@ ModelOptionsEditor::ModelOptionsEditor(QWidget *parent) :
     ui->step_spin->setValue(modelConfig->step);
     ui->interval->setValue(modelConfig->view_interval); // ms -> sec
 
-    ui->trajectory_P_spin->setValue(modelConfig->trajectory_P);
-    ui->trajectory_Pv->setValue(modelConfig->trajectory_vP);
+    ui->robot_vmax->setValue(modelConfig->robot_vmax);
+    ui->robot_wmax->setValue(modelConfig->robot_wmax);
+    ui->robot_amax->setValue(modelConfig->robot_amax);
+    ui->trajectory_v_P->setValue(modelConfig->trajectory_v_P);
+    ui->trajectory_v_I->setValue(modelConfig->trajectory_v_I);
+    ui->trajectory_v_D->setValue(modelConfig->trajectory_v_D);
+    ui->trajectory_w_P->setValue(modelConfig->trajectory_w_P);
+    ui->trajectory_w_I->setValue(modelConfig->trajectory_w_I);
+    ui->trajectory_w_D->setValue(modelConfig->trajectory_w_D);
+    ui->trajectory_v_thres->setValue(modelConfig->trajectory_v_thres);
     ui->trajectory_w_thres->setValue(modelConfig->trajectory_w_thres);
-    ui->trajectory_w_thres_offset->setValue(modelConfig->trajectory_w_thres_offset);
-    ui->trajectory_wI->setValue(modelConfig->trajectory_wI);
 
     // todo: need develop algoritm for adding and removing materials table
-    ui->addMat->setEnabled(false);
-    ui->removeMat->setEnabled(false);
+    //ui->addMat->setEnabled(false);
+    //ui->removeMat->setEnabled(false);
 
     // Create materials table from modelConfig->materials list
     ui->tableWidget->clear();
@@ -68,18 +70,8 @@ ModelOptionsEditor::~ModelOptionsEditor()
 
 void ModelOptionsEditor::closeEvent(QCloseEvent *event)
 {
-    emit closed();
     QDialog::closeEvent(event);
-}
-
-void ModelOptionsEditor::on_maxSpeed_valueChanged(int speed)
-{
-    // Устанавливаем соответсвия между значениями из виджета
-    // и настоящим диапазоном изменения скорости
-    double v = double(speed) / 1000.0;
-
-    // корректировка шага
-    modelConfig->vel_max = v;
+    emit closed();
 }
 
 void ModelOptionsEditor::on_sceneSize_w_valueChanged(int scene_width)
@@ -138,14 +130,15 @@ void ModelOptionsEditor::on_tableWidget_itemChanged(QTableWidgetItem *item)
 
 void ModelOptionsEditor::on_addMat_clicked()
 {
-    // todo: update config materials list and validate!
     ui->tableWidget->setRowCount(ui->tableWidget->rowCount()+1);
+    ItemMaterial mat;
+    modelConfig->materials.append(mat);
 }
 
 void ModelOptionsEditor::on_removeMat_clicked()
 {
-    // todo: update config materials list
     ui->tableWidget->removeRow(ui->tableWidget->currentRow());
+    modelConfig->materials.removeAt(ui->tableWidget->currentRow());
 }
 
 void ModelOptionsEditor::on_step_valueChanged(int value)
@@ -170,32 +163,62 @@ void ModelOptionsEditor::on_interval_spin_valueChanged(double value)
     ui->interval->setValue(int(1000.0*value)); // sec -> ms
 }
 
-void ModelOptionsEditor::on_trajectory_P_spin_valueChanged(double arg1)
-{
-    modelConfig->trajectory_P = arg1;
-}
-
-void ModelOptionsEditor::on_trajectory_w_thres_offset_valueChanged(double arg1)
-{
-    modelConfig->trajectory_w_thres_offset = arg1;
-}
-
-void ModelOptionsEditor::on_trajectory_w_thres_valueChanged(double arg1)
-{
-    modelConfig->trajectory_w_thres = arg1;
-}
-
-void ModelOptionsEditor::on_trajectory_wI_valueChanged(double arg1)
-{
-    modelConfig->trajectory_wI = arg1;
-}
-
-void ModelOptionsEditor::on_trajectory_Pv_valueChanged(double arg1)
-{
-    modelConfig->trajectory_vP = arg1;
-}
-
 void ModelOptionsEditor::on_modelAddress_editingFinished()
 {
     modelConfig->setModelAddress(ui->modelAddress->text());
+}
+
+void ModelOptionsEditor::on_robot_vmax_editingFinished()
+{
+    modelConfig->robot_vmax = ui->robot_vmax->value();
+}
+
+void ModelOptionsEditor::on_robot_wmax_editingFinished()
+{
+    modelConfig->robot_wmax = ui->robot_wmax->value();
+}
+
+void ModelOptionsEditor::on_robot_amax_editingFinished()
+{
+    modelConfig->robot_amax = ui->robot_amax->value();
+}
+
+void ModelOptionsEditor::on_trajectory_v_thres_editingFinished()
+{
+    modelConfig->trajectory_v_thres = ui->trajectory_v_thres->value();
+}
+
+void ModelOptionsEditor::on_trajectory_w_thres_editingFinished()
+{
+    modelConfig->trajectory_w_thres = ui->trajectory_w_thres->value();
+}
+
+void ModelOptionsEditor::on_trajectory_v_P_editingFinished()
+{
+    modelConfig->trajectory_v_P = ui->trajectory_v_P->value();
+}
+
+void ModelOptionsEditor::on_trajectory_v_I_editingFinished()
+{
+    modelConfig->trajectory_v_I = ui->trajectory_v_I->value();
+}
+
+void ModelOptionsEditor::on_trajectory_v_D_editingFinished()
+{
+    modelConfig->trajectory_v_D = ui->trajectory_v_D->value();
+}
+
+void ModelOptionsEditor::on_trajectory_w_P_editingFinished()
+{
+    modelConfig->trajectory_w_P = ui->trajectory_w_P->value();
+}
+
+void ModelOptionsEditor::on_trajectory_w_I_editingFinished()
+{
+    modelConfig->trajectory_w_I = ui->trajectory_w_I->value();
+}
+
+void ModelOptionsEditor::on_trajectory_w_D_editingFinished()
+{
+    modelConfig->trajectory_w_D = ui->trajectory_w_D->value();
 }

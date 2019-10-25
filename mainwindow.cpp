@@ -21,8 +21,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
-
     syncModelTimer = nullptr;
 
     // Init Model
@@ -30,10 +28,9 @@ MainWindow::MainWindow(QWidget *parent) :
     modelThread = nullptr;
 
     // Init Editor map
-    EditorDialog = new ItemEditor(this);
+    EditorDialog = nullptr;
 
     graphicScene = new PaintScene(this);
-    graphicScene->EditorDialog = EditorDialog;
     graphicScene->setItemIndexMethod(QGraphicsScene::NoIndex);
     modelConfig->sceneObject = graphicScene;
 
@@ -54,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
     toolsGroup->addAction(ui->open_editor);
     toolsGroup->setExclusive(true);
 
-    OptionsDialog = new ModelOptionsEditor(this);
+    OptionsDialog = nullptr;
     ModelViewer = new ModelAnalisisViewer(this);
 
     // Вешаем слот обновления статуса по сигналу от graphicScene
@@ -64,12 +61,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(graphicScene, SIGNAL(sceneRectChanged(QRectF)), this, SLOT(graphicScene_sceneRectChanged(QRectF)));
 
     // События закрытия доп. окон
-    connect(EditorDialog, SIGNAL(closed()), ui->open_editor, SLOT(toggle()));
-    connect(OptionsDialog, SIGNAL(closed()), ui->open_options, SLOT(toggle()));
     connect(ModelViewer, SIGNAL(closed()), ui->open_model_viewer, SLOT(toggle()));
 
-    // OptionsEditor
-    connect(OptionsDialog, SIGNAL(sceneRectChanged(QRectF)), graphicScene, SLOT(sceneRectShow(QRectF)));
 
     // Устанавливаем размер graphicScene
     graphicScene->setSceneRect(modelConfig->getSceneBorderWidth(),
@@ -231,8 +224,11 @@ void MainWindow::on_add_track_toggled(bool checked)
 void MainWindow::on_open_editor_toggled(bool checked)
 {
     if (checked) {
+        EditorDialog = new ItemEditor(this);
         graphicScene->setPaintMod(EditMOD);
         ui->graphicsView->setDragMode(QGraphicsView::RubberBandDrag);
+
+        connect(EditorDialog, SIGNAL(closed()), ui->open_editor, SLOT(toggle()));
 
         foreach(QGraphicsItem *item, graphicScene->items())
         {
@@ -252,9 +248,13 @@ void MainWindow::on_open_editor_toggled(bool checked)
             }
             item->update();
         }
-        graphicScene->showItemEditor();
+        EditorDialog->show();
 
     } else {
+        EditorDialog->hide();
+        delete EditorDialog;
+        EditorDialog = nullptr;
+
         graphicScene->setPaintMod(OffMOD);
         ui->graphicsView->setDragMode(QGraphicsView::NoDrag);
 
@@ -274,7 +274,6 @@ void MainWindow::on_open_editor_toggled(bool checked)
             }
             item->update();
         }
-        graphicScene->hideItemEditor();
     }
 
 
@@ -462,24 +461,20 @@ void MainWindow::showStopSimulation()
     }
     target_trajectory_items.clear();
 
+    // Обьекты не удаляются, поэтому надо принудительно.
+    disconnect(ui->pause_model, SIGNAL(triggered(bool)), this, SLOT(model_pause_trigger()));
+    disconnect(ui->stop_model, SIGNAL(triggered(bool)), this, SLOT(model_stop_trigger()));
+    disconnect(ui->stop_model, SIGNAL(triggered(bool)), this, SLOT(showStopSimulation()));
+    disconnect(this, SIGNAL(changedGroupPos(GroupPos, QTime)), ModelViewer, SLOT(async_addState(GroupPos, QTime)));
+    disconnect(controlSysService, SIGNAL(cs_started()), this, SLOT(model_started()));
+    disconnect(controlSysService, SIGNAL(cs_started_error(QString)), this, SLOT(model_started_error(QString)));
+    disconnect(controlSysService, SIGNAL(cs_stopped()), this, SLOT(showStopSimulation()));
 
     // Элементы управления
     ui->start_model->setEnabled(true);
     ui->pause_model->setEnabled(false);
     ui->pause_model->setChecked(false);
     ui->stop_model->setEnabled(false);
-
-    // Обьекты не удаляются, поэтому надо принудительно.
-    disconnect(ui->pause_model, SIGNAL(triggered(bool)), this, SLOT(model_pause_trigger()));
-    disconnect(ui->stop_model, SIGNAL(triggered(bool)), this, SLOT(model_stop_trigger()));
-    disconnect(ui->stop_model, SIGNAL(triggered(bool)), this, SLOT(showStopSimulation()));
-    disconnect(this, SIGNAL(changedGroupPos(GroupPos, QTime)),
-               ModelViewer, SLOT(async_addState(GroupPos, QTime)));
-
-    disconnect(controlSysService, SIGNAL(cs_started()), this, SLOT(model_started()));
-    disconnect(controlSysService, SIGNAL(cs_started_error(QString)), this, SLOT(model_started_error(QString)));
-    disconnect(controlSysService, SIGNAL(cs_stopped()), this, SLOT(showStopSimulation()));
-
 }
 
 void MainWindow::model_disconnect()
@@ -599,9 +594,14 @@ void MainWindow::setTransformation(QGraphicsItem *item, ItemPos pos)
 void MainWindow::on_open_options_toggled(bool checked)
 {
     if (checked) {
+        OptionsDialog = new ModelOptionsEditor(this);
+        connect(OptionsDialog, SIGNAL(closed()), ui->open_options, SLOT(toggle()));
+        connect(OptionsDialog, SIGNAL(sceneRectChanged(QRectF)), graphicScene, SLOT(sceneRectShow(QRectF)));
         OptionsDialog->show();
     } else {
         OptionsDialog->hide();
+        delete OptionsDialog;
+        OptionsDialog = nullptr;
     }
 }
 

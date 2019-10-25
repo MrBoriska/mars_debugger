@@ -40,13 +40,6 @@ public:
     QPen pen;
     QBrush brush;
 
-    // Окно редактирования элементов уже после их создания
-    ItemEditor *EditorDialog;
-
-    // Открытие/закрытие редактора элементов
-    void showItemEditor();
-    void hideItemEditor();
-
     // Задание режима редактирования
     void setPaintMod(paintMod mod);
     paintMod getPaintMod();

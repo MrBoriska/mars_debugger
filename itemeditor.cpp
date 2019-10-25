@@ -34,8 +34,8 @@ ItemEditor::~ItemEditor()
 
 void ItemEditor::closeEvent(QCloseEvent *event)
 {
-    emit closed();
     QDialog::closeEvent(event);
+    emit closed();
 }
 
 void ItemEditor::on_dial_valueChanged(int angle)

@@ -71,7 +71,7 @@ void PaintPolygonItem::select_changed() {
         if (!(this->isSelected())) {
             qDebug() << "начинаем тащить";
 
-            QList<QGraphicsItem*> other_selecting = (dynamic_cast<PaintScene*>(this->scene()))->EditorDialog->getSelectedItems();
+            QList<QGraphicsItem*> other_selecting = (dynamic_cast<PaintScene*>(this->scene()))->selectedItems();
 
             foreach(QGraphicsItem* point_, this->childItems()) {
 

@@ -563,16 +563,6 @@ void PaintScene::removeItem(QGraphicsItem *item)
     emit removedItem(item);
 }
 
-void PaintScene::showItemEditor()
-{
-    EditorDialog->show();
-}
-
-void PaintScene::hideItemEditor()
-{
-    EditorDialog->hide();
-}
-
 void PaintScene::setPaintMod(paintMod mod)
 {
     this->paint_mod = mod;

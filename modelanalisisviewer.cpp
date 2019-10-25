@@ -70,6 +70,10 @@ void ModelAnalisisViewer::setAxisNames(PlotType plot_type, QCustomPlot * plot)
         case ERR_VEL_Z:
             plot->yAxis->setLabel("Angular velocity error, [m/s]");
             break;
+        default:
+            plot->xAxis->setLabel("");
+            plot->yAxis->setLabel("");
+            break;
     }
 
 }
@@ -113,8 +117,8 @@ void ModelAnalisisViewer::startAnalisis(int units_count)
     ui->Plot_1->yAxis->setRange(0, 0.00000001);
     ui->Plot_2->yAxis->setRange(0, 0.00000001);
 
-    //ui->Xaxis->setInteraction(QCP::iSelectLegend, true);
-    //ui->Yaxis->setInteraction(QCP::iSelectLegend, true);
+    ui->Plot_1->setInteraction(QCP::iSelectLegend, true);
+    ui->Plot_2->setInteraction(QCP::iSelectLegend, true);
 
     //connect(ui->Xaxis, SIGNAL(legendClick(QCPLegend *, QCPAbstractLegendItem *, QMouseEvent *)),
     //        this, SLOT(selectPlot(QCPLegend *, QCPAbstractLegendItem *, QMouseEvent *)));
@@ -141,10 +145,22 @@ void ModelAnalisisViewer::addState(int index, qreal x, qreal y, qint64 time)
     ui->Plot_1->xAxis->setRange(0.0, time);
     ui->Plot_2->xAxis->setRange(0.0, time);
 
+    // Setting autorange
+    double upper = ui->Plot_1->yAxis->range().upper;
+    double lower = ui->Plot_1->yAxis->range().lower;
     if (ui->Plot_1->yAxis->range().upper < 1.2*x)
-        ui->Plot_2->yAxis->setRange(0, 1.2*x);
-    if (ui->Plot_1->yAxis->range().upper < 1.2*y)
-        ui->Plot_2->yAxis->setRange(0, 1.2*y);
+        upper = 1.2*x;
+    if (ui->Plot_1->yAxis->range().lower > 1.2*x)
+        lower = 1.2*x;
+    ui->Plot_1->yAxis->setRange(lower, upper);
+
+    upper = ui->Plot_2->yAxis->range().upper;
+    lower = ui->Plot_2->yAxis->range().lower;
+    if (ui->Plot_2->yAxis->range().upper < 1.2*y)
+        upper = 1.2*y;
+    if (ui->Plot_2->yAxis->range().lower > 1.2*y)
+        lower = 1.2*y;
+    ui->Plot_2->yAxis->setRange(lower, upper);
 
     ui->Plot_1->replot();
     ui->Plot_2->replot();
@@ -154,27 +170,26 @@ void ModelAnalisisViewer::addState(int index, qreal x, qreal y, qint64 time)
 qreal ModelAnalisisViewer::getDataValueByType(GroupPos gpos, QTime time, PlotType plot_type, AxisType axis_type, int robot_id)
 {
     qreal data_value = 0;
-
     RobotState st_st = ModelConfig::Instance()->getStartPosition().object_pos;
 
     switch (plot_type) {
         case V_LIN:
             switch(axis_type) {
                 case X_AXIS:
-                    data_value = gpos.robots_pos.at(robot_id).vel.x;
+                    data_value = gpos.robots_pos.at(robot_id).vel_real.x;
                     break;
                 default:
-                    data_value = 0;
+                    data_value = gpos.robots_pos.at(robot_id).vel.x;
                     break;
             }
             break;
         case V_ANG:
             switch(axis_type) {
                 case Z_AXIS:
-                    data_value = gpos.robots_pos.at(robot_id).vel.w;
+                    data_value = gpos.robots_pos.at(robot_id).vel_real.w;
                     break;
                 default:
-                    data_value = 0;
+                    data_value = gpos.robots_pos.at(robot_id).vel.w;
                     break;
             }
             break;
@@ -212,24 +227,28 @@ qreal ModelAnalisisViewer::getDataValueByType(GroupPos gpos, QTime time, PlotTyp
                     data_value = 0;
                     break;
             }
+            // cm to m
+            data_value /= 100;
             break;
         case ERR_POS:
             switch(axis_type) {
                 case X_AXIS:
-                    data_value = gpos.robots_pos.at(robot_id).pos_real.x - st_st.pos.x;
+                    data_value = gpos.robots_pos.at(robot_id).pos_real.x + st_st.pos.x;
                     data_value -= gpos.robots_pos.at(robot_id).pos.x;
                     break;
                 case Y_AXIS:
-                    data_value = gpos.robots_pos.at(robot_id).pos_real.y - st_st.pos.y;
+                    data_value = gpos.robots_pos.at(robot_id).pos_real.y + st_st.pos.y;
                     data_value -= gpos.robots_pos.at(robot_id).pos.y;
                     break;
                 default:
                     data_value = sqrt(
-                        pow(gpos.robots_pos.at(robot_id).pos_real.x - st_st.pos.x - gpos.robots_pos.at(robot_id).pos.x, 2) +
-                        pow(gpos.robots_pos.at(robot_id).pos_real.y - st_st.pos.y - gpos.robots_pos.at(robot_id).pos.y, 2)
+                        pow(gpos.robots_pos.at(robot_id).pos_real.x + st_st.pos.x - gpos.robots_pos.at(robot_id).pos.x, 2) +
+                        pow(gpos.robots_pos.at(robot_id).pos_real.y + st_st.pos.y - gpos.robots_pos.at(robot_id).pos.y, 2)
                     );
                     break;
             }
+            // cm to m
+            data_value /= 100;
             break;
         case ERR_VEL_X:
             switch(axis_type) {
@@ -242,7 +261,6 @@ qreal ModelAnalisisViewer::getDataValueByType(GroupPos gpos, QTime time, PlotTyp
                     break;
             }
             break;
-
         case ERR_VEL_Z:
             switch(axis_type) {
                 case Z_AXIS:
@@ -266,21 +284,27 @@ void ModelAnalisisViewer::async_addState(GroupPos gpos, QTime time)
         prev_time = time.msecsSinceStartOfDay();
         prev_gpos = gpos;
     }
+
+    PlotType plot_type_1 = PlotType(ui->typeSelectBox->currentIndex());
+    AxisType axis_type_1 = AxisType(ui->axisSelectBox->currentIndex());
+    PlotType plot_type_2 = PlotType(ui->typeSelectBox_2->currentIndex());
+    AxisType axis_type_2 = AxisType(ui->axisSelectBox_2->currentIndex());
+
     int len = gpos.robots_pos.count();
     for (int i=0; i<len; i++) {
         this->addState(i,
            this->getDataValueByType(
                gpos,
                time,
-               PlotType(ui->typeSelectBox->currentIndex()),
-               AxisType(ui->axisSelectBox->currentIndex()),
+               plot_type_1,
+               axis_type_1,
                i
            ),
            this->getDataValueByType(
                gpos,
                time,
-               PlotType(ui->typeSelectBox_2->currentIndex()),
-               AxisType(ui->axisSelectBox_2->currentIndex()),
+               plot_type_2,
+               axis_type_2,
                i
            ),
            time.msecsSinceStartOfDay()

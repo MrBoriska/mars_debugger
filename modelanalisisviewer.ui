@@ -63,6 +63,11 @@
        </property>
        <item>
         <property name="text">
+         <string/>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Скорость линейная</string>
         </property>
        </item>
@@ -95,6 +100,9 @@
      </item>
      <item>
       <widget class="QComboBox" name="axisSelectBox">
+       <property name="currentIndex">
+        <number>-1</number>
+       </property>
        <item>
         <property name="text">
          <string>X</string>
@@ -180,6 +188,11 @@
        </property>
        <item>
         <property name="text">
+         <string/>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Скорость линейная</string>
         </property>
        </item>
@@ -212,6 +225,9 @@
      </item>
      <item>
       <widget class="QComboBox" name="axisSelectBox_2">
+       <property name="currentIndex">
+        <number>-1</number>
+       </property>
        <item>
         <property name="text">
          <string>X</string>

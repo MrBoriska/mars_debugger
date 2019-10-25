@@ -18,17 +18,19 @@ class ModelAnalisisViewer : public QDialog
 public:
 
     enum PlotType {
-        V_LIN, V_ANG, ACC_LIN, ACC_ANG, POS, ERR_POS, ERR_VEL_X, ERR_VEL_Z
+        UNKNOWN=0, V_LIN, V_ANG, ACC_LIN, ACC_ANG, POS, ERR_POS, ERR_VEL_X, ERR_VEL_Z
     };
 
     enum AxisType {
-         NORM_AXIS, X_AXIS, Y_AXIS, Z_AXIS
+        NORM_AXIS=0, X_AXIS, Y_AXIS, Z_AXIS
     };
 
     const QStringList types_list = {
+        " ",
         "Линейная скорость",
         "Угловая скорость",
         "Линейное ускорение",
+        "Угловое ускорение",
         "Положение",
         "Рассогласование по положению",
         "Рассогласование по линейной скорости",

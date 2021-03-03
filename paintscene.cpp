@@ -294,6 +294,7 @@ void PaintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 } else if (event->buttons() == Qt::LeftButton) {
                     QPointF nodePos;
                     ObjectItem *ob_itm = nullptr;
+                    UnitItem *unit_itm = nullptr;
 
                     // Ищем обьект управления на сцене и ставим начальную точку в центр этого обьекта
                     QList<QGraphicsItem *> under_items = this->items(event->scenePos());
@@ -305,11 +306,16 @@ void PaintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
                                 nodePos = ob_itm->mapToScene(ob_itm->getMagnetPointPos(PaintPoint::CENTRAL));
                                 break;
+                            } else if (item && item->type() == UnitItem::Type) {
+                                unit_itm = dynamic_cast<UnitItem*>(item);
+
+                                nodePos = unit_itm->mapToScene(unit_itm->getMagnetPointPos(PaintPoint::CENTRAL));
+                                break;
                             }
                         }
                     }
 
-                    if (ob_itm) {
+                    if (ob_itm || unit_itm) {
                         QPainterPath path(nodePos);
                         // Начинаем траекторию в nodePos
                         track_item = new TrackItem(path);
@@ -322,7 +328,7 @@ void PaintScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                         QMessageBox::warning(
                             reinterpret_cast<QWidget *>(this->activeWindow()),
                             "info",
-                            "Траектория всегда должна начинаться с положения обьекта управления"
+                            "Траектория всегда должна начинаться с положения обьекта управления или робота"
                         );
                     }
                 }

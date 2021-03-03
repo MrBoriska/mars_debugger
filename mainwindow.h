@@ -73,6 +73,10 @@ private slots:
 
     void graphicScene_sceneRectChanged(QRectF rect);
 
+    void on_plan_path_triggered();
+
+    void on_reconnect_planner_triggered();
+    
 private:
     Ui::MainWindow *ui;
     PaintScene *graphicScene;

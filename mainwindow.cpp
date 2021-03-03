@@ -613,3 +613,36 @@ void MainWindow::on_open_model_viewer_toggled(bool checked)
         ModelViewer->hide();
     }
 }
+
+void MainWindow::on_plan_path_triggered()
+{
+
+    if (modelConfig->getTrack() != nullptr) {
+        if (modelConfig->getUnits().size() == 1) {
+            ui->statusBar->showMessage(
+                "Планируем маршрут для одного робота..."
+            );
+        } else if (modelConfig->getUnits().size() > 1) {
+            ui->statusBar->showMessage(
+                "Планируем маршрут для группы роботов..."
+            );
+        } else {
+            QMessageBox::warning(
+                dynamic_cast<QWidget *>(this),
+                "info",
+                "Для планирования маршрута необходимо добавить робота или группу роботов"
+            );
+        }
+    } else {
+        QMessageBox::warning(
+            dynamic_cast<QWidget *>(this),
+            "info",
+            "Для планирования маршрута необходимо добавить \"траекторию\" как минимум из двух точек. Начальной и конечной."
+        );
+    }
+}
+
+void MainWindow::on_reconnect_planner_triggered()
+{
+
+}

@@ -62,7 +62,7 @@
      <x>0</x>
      <y>0</y>
      <width>752</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -118,6 +118,7 @@
    <addaction name="open_editor"/>
    <addaction name="separator"/>
    <addaction name="start_model"/>
+   <addaction name="plan_path"/>
    <addaction name="pause_model"/>
    <addaction name="stop_model"/>
    <addaction name="separator"/>
@@ -248,6 +249,17 @@
    </property>
    <property name="toolTip">
     <string>Соединение с моделью</string>
+   </property>
+  </action>
+  <action name="plan_path">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Планировать</string>
+   </property>
+   <property name="toolTip">
+    <string>Планировать маршрут</string>
    </property>
   </action>
  </widget>

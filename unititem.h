@@ -26,6 +26,8 @@ public:
         return editable;
     }
 
+    QPointF getMagnetPointPos(int index);
+
 private:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 

@@ -13,6 +13,7 @@
 #include "modelanalisisviewer.h"
 
 #include "controlsysservice.h"
+#include "pathplannerservice.h"
 
 namespace Ui {
 class MainWindow;
@@ -91,6 +92,10 @@ private:
     // Сетевой сервис для коммуникации с системой управленичя или ее моделью
     ControlSysService *controlSysService;
     bool MODEL_READY;
+
+    // Сетевой сервис для коммуникации с системой планирования маршрута
+    PathPlannerService *pathPlannerService;
+    bool PLANNER_READY;
 
     void setTransformation(QGraphicsItem *item, ItemPos pos);
     void setPositionByGroupPos(QList<UnitItem *> units_items, ObjectItem *object_item, GroupPos positions);

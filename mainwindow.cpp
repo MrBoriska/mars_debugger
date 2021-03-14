@@ -63,7 +63,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // События закрытия доп. окон
     connect(ModelViewer, SIGNAL(closed()), ui->open_model_viewer, SLOT(toggle()));
 
-
     // Устанавливаем размер graphicScene
     graphicScene->setSceneRect(modelConfig->getSceneBorderWidth(),
                                modelConfig->getSceneBorderWidth(),
@@ -73,6 +72,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // Инициализация соединения с системой группового управления
     MODEL_READY = false;
     controlSysService = nullptr;
+
+    // Инициализация соединения с системой планирования маршрута
+    PLANNER_READY = false;
+    pathPlannerService = nullptr;
 }
 
 

@@ -19,6 +19,7 @@ SOURCES += main.cpp\
     paintscene.cpp \
     itemeditor.cpp \
     paintpolygonitem.cpp \
+    pathplannerservice.cpp \
     unititem.cpp \
     paintpoint.cpp \
     objectitem.cpp \
@@ -35,6 +36,7 @@ HEADERS  += mainwindow.h \
     paintscene.h \
     itemeditor.h \
     paintpolygonitem.h \
+    pathplannerservice.h \
     unititem.h \
     paintpoint.h \
     objectitem.h \

@@ -111,12 +111,12 @@ void PathPlannerService::pp_readyRead(QString strReply)
   else if (msg_type == "error") {
       // todo
   }
-  else if (msg_type == "started_event") handler_started_event();
+  else if (msg_type == "progress_event") handler_progress_event();
+  else if (msg_type == "result_event") handler_result_event();
   else if (msg_type == "paused_event") handler_paused_event();
   else if (msg_type == "stopped_event") handler_stopped_event();
   else if (msg_type == "ready_event") handler_ready_event();
   else if (msg_type == "unready_event") handler_unready_event();
-  else if (msg_type == "positions") handler_positions(jsonObject);
 
   // Unknown message type
   else {
@@ -138,9 +138,15 @@ void PathPlannerService::start_request()
   msg.insert("type","start_request");
   self_socket->sendTextMessage(QJsonDocument(msg).toJson());
 }
-void PathPlannerService::handler_started_event()
+void PathPlannerService::handler_progress_event()
 {
-  emit pp_started();
+  emit pp_progress();
+  //emit cs_started_error("Unknown error");
+}
+
+void PathPlannerService::handler_result_event()
+{
+  emit pp_result();
   //emit cs_started_error("Unknown error");
 }
 
@@ -192,29 +198,6 @@ void PathPlannerService::set_config_data(ModelConfig *config)
   self_socket->sendTextMessage(QJsonDocument(msg).toJson());
 }
 
-
-void PathPlannerService::set_start_pos(GroupPos start_pos)
-{
-  QJsonObject msg = ModelConfig::gpos_to_jsonObject(start_pos);
-  msg.insert("type", "set_start_pos");
-
-  qDebug() << msg;
-
-  self_socket->sendTextMessage(QJsonDocument(msg).toJson());
-}
-
-void PathPlannerService::set_track_path(QPainterPath tpath)
-{
-  QJsonObject msg;
-  msg.insert("type", "set_track_path");
-  msg.insert("path", ModelConfig::tpath_to_jsonArray(tpath));
-
-
-  qDebug() << msg;
-
-  self_socket->sendTextMessage(QJsonDocument(msg).toJson());
-}
-
 // Вызывается в момент, когда СУ имеет достаточное количество входных данных, чтобы запуститься
 void PathPlannerService::handler_ready_event()
 {
@@ -229,16 +212,9 @@ void PathPlannerService::handler_unready_event()
 * Функции для запроса текущего положения роботов и груза
 * ---------------------------------------------------------------
 */
-void PathPlannerService::get_pos_request()
+void PathPlannerService::get_progress_request()
 {
   QJsonObject msg;
-  msg.insert("type","get_pos");
+  msg.insert("type","get_progress");
   self_socket->sendTextMessage(QJsonDocument(msg).toJson());
-}
-void PathPlannerService::handler_positions(QJsonObject jsonObject)
-{
-  emit pp_current_pos(
-      ModelConfig::jsonObject_to_gpos(jsonObject),
-      QTime(0,0,0,0).addMSecs(jsonObject.value("time").toInt())
-  );
 }

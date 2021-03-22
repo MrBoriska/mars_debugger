@@ -21,12 +21,6 @@ signals:
     void pp_disconnected();
 
     /**
-     * @brief сигнал о событии начала работы модели
-     *        старт процесса моделирования.
-     */
-    void pp_started();
-
-    /**
      * @brief сигнал о событии ошибки при запуске моделирования
      * @param QString - информация об ошибке
      */
@@ -37,7 +31,8 @@ signals:
     void pp_unready();
     void pp_paused();
     void pp_stopped();
-    void pp_current_pos(GroupPos, QTime);
+    void pp_progress();
+    void pp_result();
 
 public slots:
     void init();
@@ -45,7 +40,7 @@ public slots:
     void send_pause_request();
     void send_stop_request();
     void set_config_data(ModelConfig *config);
-    void get_pos_request();
+    void get_progress_request();
 
 private slots:
     void pp_connected();
@@ -58,13 +53,12 @@ private:
 
     bool is_server;
 
-    void handler_started_event();
+    void handler_progress_event();
+    void handler_result_event();
     void handler_paused_event();
     void handler_stopped_event();
     void handler_ready_event();
     void handler_unready_event();
-};
-
 };
 
 #endif // PATHPLANNERSERVICE_H

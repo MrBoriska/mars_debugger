@@ -316,13 +316,12 @@ void MainWindow::on_start_model_triggered()
 {
 
     if (modelConfig->getTrack() == nullptr
-         || modelConfig->getObject() == nullptr
          || modelConfig->getUnits().isEmpty())
     {
         QMessageBox::warning(
             dynamic_cast<QWidget *>(this),
             "info",
-            "Для запуска модели необходимо добавить обьект, роботов и траекторию"
+            "Для запуска модели необходимо роботов и траекторию"
         );
         return;
     }
@@ -509,14 +508,14 @@ void MainWindow::syncModelAndView(GroupPos gpos, QTime time)
         + time.toString("hh:mm:ss.zzz")
     );
 
-    RobotState start_st = modelConfig->getStartPosition().object_pos;
+    QPointF start_pos = modelConfig->getTrack()->mapToScene(modelConfig->getTrack()->scenePos());
     int i = 0;
     foreach (RobotState rst, gpos.robots_pos) {
         // Trajectory logging: real trajectory
         double R = 3;
         QGraphicsEllipseItem *tp = new QGraphicsEllipseItem();
         tp->setRect(-R,-R,2*R,2*R);
-        tp->setPos(rst.pos_real.x+start_st.pos.x, rst.pos_real.y+start_st.pos.y);
+        tp->setPos(rst.pos_real.x+start_pos.x(), rst.pos_real.y+start_pos.y());
         tp->setZValue(10);
         tp->setBrush(QBrush(Qt::green));
         graphicScene->addItem(tp);
@@ -549,8 +548,10 @@ void MainWindow::setPositionByGroupPos(
     }
 
     // Отразим координаты обьекта управления
-    ItemPos object_pos = positions.object_pos.pos;
-    setTransformation(object_item, object_pos);
+    if (object_item != nullptr) {
+        ItemPos object_pos = positions.object_pos.pos;
+        setTransformation(object_item, object_pos);
+    }
 }
 
 void MainWindow::setTransformation(QGraphicsItem *item, ItemPos pos)

@@ -128,11 +128,15 @@ void ModelConfig::setStartPosition()
     }
 
     // Начальная позиция обьекта управления
-    QPointF curr_object_pos = object_item->sceneBoundingRect().center();
+    if (object_item != nullptr) {
+        QPointF curr_object_pos = object_item->sceneBoundingRect().center();
 
-    pos.x = curr_object_pos.x();
-    pos.y = curr_object_pos.y();
-    pos.alfa = object_item->rotation();
+        pos.x = curr_object_pos.x();
+        pos.y = curr_object_pos.y();
+        pos.alfa = object_item->rotation();
+    } else {
+        pos = startPos.robots_pos.at(0).pos;
+    }
 
     state.pos = pos;
     startPos.object_pos = state;

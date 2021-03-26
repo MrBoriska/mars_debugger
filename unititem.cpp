@@ -28,6 +28,14 @@ UnitItem::~UnitItem()
     qDebug() << "delete UnitItem(" << dynamic_cast<QGraphicsItem *>(this) << ")";
 }
 
+QPointF UnitItem::getMagnetPointPos(int index) {
+    if (index == PaintPoint::CENTRAL) {
+        return this->mapFromScene(this->scenePos());
+    }
+
+    return QPointF();
+}
+
 QVariant UnitItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == ItemSelectedChange && scene()) {

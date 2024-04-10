@@ -2,7 +2,7 @@
 
 ModelConfig::ModelConfig(QObject *parent) : QObject(parent)
 {
-    step = 0.01;
+    step = 0.1;
     interval = 100; // ms
     view_interval = 200; // ms
     target_realtime_factor = 0.6;

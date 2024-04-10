@@ -478,6 +478,12 @@ void PaintScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         }
     }
 
+    QPointF mpose = event->scenePos();
+    emit changedStatus("Положение курсора:"
+                       + QString::number(mpose.x()*0.01)
+                       + "x" + QString::number(mpose.y()*0.01) + " [м]");
+
+
     QGraphicsScene::mouseMoveEvent(event);
 }
 
